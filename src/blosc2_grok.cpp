@@ -13,6 +13,8 @@ int blosc2_grok_encoder(
     blosc2_cparams* cparams,
     const void* chunk
 ) {
+    int size = -1;
+
     // Read blosc2 metadata
     uint8_t *content;
     int32_t content_len;
@@ -33,7 +35,8 @@ int blosc2_grok_encoder(
     const uint32_t numComps = blockshape[0];
     const uint32_t dimX = blockshape[1];
     const uint32_t dimY = blockshape[2];
-    const uint32_t precision = ((blosc2_schunk*)cparams->schunk)->typesize * 8;
+    const uint32_t typesize = ((blosc2_schunk*)cparams->schunk)->typesize;
+    const uint32_t precision = typesize * 8;
 
     // initialize compress parameters
     grk_cparameters compressParams;
@@ -68,8 +71,45 @@ int blosc2_grok_encoder(
     }
     image = grk_image_new(numComps, components, GRK_CLRSPC_SRGB, true);
 
+    // fill in component data
+    // see grok.h header for full details of image structure
 
-    const int size = 0;
+    uint8_t *ptr = (uint8_t*)input;
+    for(uint16_t compno = 0; compno < image->numcomps; ++compno)
+    {
+        auto comp = image->comps + compno;
+        auto compWidth = comp->w;
+        auto compHeight = comp->h;
+        auto compData = comp->data;
+        if(!compData) {
+            fprintf(stderr, "Image has null data for component %d\n", compno);
+            goto beach;
+        }
+        // fill in component data, taking component stride into account
+        // in this example, we just zero out each component
+        auto srcData = new int32_t[compWidth * compHeight];
+
+        uint32_t len = compWidth * compHeight * typesize;
+        memcpy(srcData, ptr, len);
+        ptr += len;
+        //memset(srcData, 0, compWidth * compHeight * sizeof(int32_t));
+
+        auto srcPtr = srcData;
+        for(uint32_t j = 0; j < compHeight; ++j) {
+            memcpy(compData, srcPtr, compWidth * sizeof(int32_t));
+            srcPtr += compWidth;
+            compData += comp->stride;
+        }
+        delete[] srcData;
+    }
+
+beach:
+    // cleanup
+    delete[] components;
+    grk_object_unref(codec);
+    grk_object_unref(&image->obj);
+    grk_deinitialize();
+  
     return size;
 }
 
