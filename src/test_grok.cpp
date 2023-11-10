@@ -1,0 +1,181 @@
+/*********************************************************************
+    Blosc - Blocked Shuffling and Compression Library
+
+    Copyright (C) 2023  The Blosc Developers <blosc@blosc.org>
+    https://blosc.org
+    License: BSD 3-Clause (see LICENSE.txt)
+
+    See LICENSE.txt for details about copyright and rights to use.
+
+    Test program demonstrating use of the Blosc filter from C code.
+    Compile this program with cmake and run:
+
+    $ ./test_grok
+    Compress    OK
+    Decompress  OK
+
+**********************************************************************/
+
+#include <memory>
+#include <cmath>
+#include <cstdio>
+#include <string>
+
+#include "blosc2.h"
+#include "blosc2/codecs-registry.h"
+#include "b2nd.h"
+#include "grok.h"
+#include "blosc2_grok.h"
+
+
+void errorCallback(const char* msg, [[maybe_unused]] void* client_data)
+{
+    auto t = std::string(msg) + "\n";
+    fprintf(stderr, t.c_str());
+}
+void warningCallback(const char* msg, [[maybe_unused]] void* client_data)
+{
+    auto t = std::string(msg) + "\n";
+    fprintf(stdout, t.c_str());
+}
+void infoCallback(const char* msg, [[maybe_unused]] void* client_data)
+{
+    auto t = std::string(msg) + "\n";
+    fprintf(stdout, t.c_str());
+}
+
+
+int comp_decomp() {
+    const uint32_t dimX = 640;
+    const uint32_t dimY = 480;
+    const uint32_t numComps = 3;
+    const uint32_t precision = 8;
+    uint64_t compressedLength = 0;
+    int8_t ndim = 3;
+    int64_t shape[] = {numComps, dimX, dimY};
+    int32_t chunkshape[] = {numComps, (int32_t) dimX, (int32_t) dimY};
+    int32_t blockshape[] = {numComps, (int32_t) dimX, (int32_t) dimY};
+    uint8_t itemsize = 4;
+
+    // initialize compress parameters
+    grk_cparameters compressParams;
+    grk_compress_set_default_params(&compressParams);
+    compressParams.cod_format = GRK_FMT_JP2;
+    compressParams.verbose = true;
+
+    grk_codec* codec = NULL;
+    grk_image_comp* components = NULL;
+
+    // initialize library
+    grk_initialize(NULL, 0, false);
+
+    grk_stream_params streamParams;
+    grk_set_default_stream_params(&streamParams);
+
+    size_t bufLen = (size_t)numComps * ((precision + 7) / 8) * dimX * dimY;
+    uint8_t *image = (uint8_t*)calloc(bufLen, 1);
+
+    // set library message handlers
+    grk_set_msg_handlers(infoCallback, nullptr, warningCallback, nullptr, errorCallback, nullptr);
+
+    blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
+    cparams.compcode = 160;
+    //cparams.compcode = BLOSC_BLOSCLZ;
+    //cparams.compcode = BLOSC_ZSTD;
+    //cparams.clevel = 9;
+    blosc2_codec grok_codec = {0};
+    grok_codec.compname = (char*)"grok";
+    grok_codec.compcode = 160;
+    grok_codec.complib = 1;
+    grok_codec.version = 0;
+    grok_codec.encoder = blosc2_grok_encoder;
+    //grok_codec.decoder = blosc2_grok_decoder;
+    int rc = blosc2_register_codec(&grok_codec);
+    if (rc < 0) {
+        printf("Error registering codec\n");
+        return -1;
+    }
+
+    cparams.typesize = itemsize;
+    for (int i = 0; i < BLOSC2_MAX_FILTERS; i++) {
+        cparams.filters[i] = 0;
+    }
+
+    // Codec parameters
+    blosc2_grok_params codec_params = {0};
+    codec_params.qfactor = 255;
+    codec_params.isJPH = false;
+    codec_params.color_space = 0;
+    codec_params.dimX = dimX;
+    codec_params.dimY = dimY;
+    codec_params.nthreads = 0;
+    codec_params.compressParams = compressParams;
+    codec_params.streamParams = streamParams;
+    cparams.codec_params = &codec_params;
+    grk_initialize(nullptr, codec_params.nthreads, compressParams.verbose);
+
+    blosc2_dparams dparams = BLOSC2_DPARAMS_DEFAULTS;
+    blosc2_storage b2_storage = {.cparams=&cparams, .dparams=&dparams};
+
+    b2nd_context_t *ctx = b2nd_create_ctx(&b2_storage, ndim, shape, chunkshape, blockshape, NULL, 0, NULL, 0);
+
+    b2nd_array_t *arr;
+    BLOSC_ERROR(b2nd_from_cbuffer(ctx, &arr, image, bufLen));
+    if((arr->sc->nbytes <= 0) || (arr->sc->nbytes > bufLen)) {
+        printf("Compression error");
+        return -1;
+    }
+    printf("Compress OK");
+    printf("Compress ratio: %.3f x\n", (float)arr->sc->nbytes / (float)arr->sc->cbytes);
+
+//    uint8_t *buffer;
+//    uint64_t buffer_size = itemsize;
+//    for (int i = 0; i < arr->ndim; ++i) {
+//        buffer_size *= arr->shape[i];
+//    }
+//    buffer = static_cast<uint8_t *>(malloc(buffer_size));
+//
+//    BLOSC_ERROR(b2nd_to_cbuffer(arr, buffer, buffer_size));
+//
+//    // Check that the decompressed data is ok
+//    double tolerance = 0.1;
+//    for (int i = 0; i < (buffer_size / itemsize); i++) {
+//        if ((image[i] == 0) || (buffer[i] == 0)) {
+//            if (abs(image[i] - buffer[i]) > tolerance) {
+//            printf("i: %d, data %d, dest %d", i, image[i], buffer[i]);
+//            printf("\n Decompressed data differs too much from original!\n");
+//            return -1;
+//            }
+//        }
+//        else if (abs(image[i] - buffer[i]) > tolerance * fmaxf(image[i], buffer[i])) {
+//            printf("i: %d, data %d, dest %d", i, image[i], buffer[i]);
+//            printf("\n Decompressed data differs too much from original!\n");
+//            return -1;
+//        }
+//    }
+//
+//    printf("Decompress OK\t");
+
+
+beach:
+  // cleanup
+  BLOSC_ERROR(b2nd_free_ctx(ctx));
+  BLOSC_ERROR(b2nd_free(arr));
+  delete[] components;
+  grk_object_unref(codec);
+  free(image);
+  //free(buffer);
+
+  return BLOSC2_ERROR_SUCCESS;
+}
+
+int main(void) {
+  // Initialization
+  blosc2_init();
+
+  int error = comp_decomp();
+
+  grk_deinitialize();
+  blosc2_destroy();
+  return error;
+}

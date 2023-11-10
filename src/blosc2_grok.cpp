@@ -1,3 +1,13 @@
+/*********************************************************************
+    Blosc - Blocked Shuffling and Compression Library
+
+    Copyright (c) 2021  The Blosc Development Team <blosc@blosc.org>
+    https://blosc.org
+    License: BSD 3-Clause (see LICENSE.txt)
+
+    See LICENSE.txt for details about copyright and rights to use.
+**********************************************************************/
+
 #include <memory>
 
 #include "grok.h"
@@ -18,7 +28,8 @@ int blosc2_grok_encoder(
     // Read blosc2 metadata
     uint8_t *content;
     int32_t content_len;
-    BLOSC_ERROR(blosc2_meta_get((blosc2_schunk*)cparams->schunk, "b2nd", &content, &content_len));
+    BLOSC_ERROR(blosc2_meta_get((blosc2_schunk*)cparams->schunk, "b2nd",
+                                &content, &content_len));
 
     int8_t ndim;
     int64_t shape[3];
@@ -27,7 +38,8 @@ int blosc2_grok_encoder(
     char *dtype;
     int8_t dtype_format;
     BLOSC_ERROR(
-        b2nd_deserialize_meta(content, content_len, &ndim, shape, chunkshape, blockshape, &dtype, &dtype_format)
+        b2nd_deserialize_meta(content, content_len, &ndim,
+                              shape, chunkshape, blockshape, &dtype, &dtype_format)
     );
     free(content);
     free(dtype);
@@ -39,27 +51,21 @@ int blosc2_grok_encoder(
     const uint32_t precision = typesize * 8;
 
     // initialize compress parameters
-    grk_cparameters compressParams;
-    grk_compress_set_default_params(&compressParams);
-    compressParams.cod_format = GRK_FMT_JP2;
-    compressParams.verbose = true;
-
     grk_codec* codec = nullptr;
-    grk_image* image = nullptr;
-    grk_image_comp* components = nullptr;
-
-    grk_stream_params streamParams;
-    grk_set_default_stream_params(&streamParams);
-//  WriteStreamInfo sinfo(&streamParams);
+    blosc2_grok_params *codec_params = (blosc2_grok_params *)cparams->codec_params;
+    grk_cparameters *compressParams = &codec_params->compressParams;
+    grk_stream_params *streamParams = &codec_params->streamParams;
+    grk_set_default_stream_params(streamParams);
+    //WriteStreamInfo sinfo(&streamParams);
 
     std::unique_ptr<uint8_t[]> data;
     size_t bufLen = (size_t)numComps * ((precision + 7) / 8) * dimX * dimY;
     data = std::make_unique<uint8_t[]>(bufLen);
-    streamParams.buf = data.get();
-    streamParams.buf_len = bufLen;
+    streamParams->buf = data.get();
+    streamParams->buf_len = bufLen;
 
     // create blank image
-    components = new grk_image_comp[numComps];
+    auto* components = new grk_image_comp[numComps];
     for(uint32_t i = 0; i < numComps; ++i) {
         auto c = components + i;
         c->w = dimX;
@@ -69,14 +75,14 @@ int blosc2_grok_encoder(
         c->prec = precision;
         c->sgnd = false;
     }
-    image = grk_image_new(numComps, components, GRK_CLRSPC_SRGB, true);
+    grk_image* image = grk_image_new(
+        numComps, components, GRK_CLRSPC_SRGB, true);
 
     // fill in component data
     // see grok.h header for full details of image structure
 
-    uint8_t *ptr = (uint8_t*)input;
-    for(uint16_t compno = 0; compno < image->numcomps; ++compno)
-    {
+    auto *ptr = (uint8_t*)input;
+    for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
         auto comp = image->comps + compno;
         auto compWidth = comp->w;
         auto compHeight = comp->h;
@@ -103,18 +109,38 @@ int blosc2_grok_encoder(
         delete[] srcData;
     }
 
+    // initialize compressor
+    codec = grk_compress_init(streamParams, compressParams, image);
+    if (!codec) {
+        fprintf(stderr, "Failed to initialize compressor\n");
+        goto beach;
+    }
+
+    // compress
+    size = (int)grk_compress(codec, nullptr);
+    if (size == 0) {
+        fprintf(stderr, "Failed to compress\n");
+        goto beach;
+    }
+
+    printf("Compression succeeded: %d bytes used.\n", size);
+
 beach:
     // cleanup
     delete[] components;
     grk_object_unref(codec);
     grk_object_unref(&image->obj);
     grk_deinitialize();
-  
+
     return size;
 }
 
 
-void blosc2_grok_init() {
+void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     // initialize library
-    grk_initialize(nullptr, 0, false);
+    grk_initialize(nullptr, nthreads, verbose);
+}
+
+void blosc2_grok_destroy() {
+    grk_deinitialize();
 }

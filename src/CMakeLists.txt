@@ -33,16 +33,16 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/grok/src/lib/core
 )
 
-#link_directories(${Python_LIB} ${Python_LIB64})
+link_directories(${Python_LIB} ${Python_LIB64})
 target_link_libraries(blosc2_grok grokj2k)
 
 # Install
 install(TARGETS blosc2_grok LIBRARY DESTINATION blosc2_grok)
 
 # Test program
-#add_executable(test_grok test_grok.c utils.cpp)
-#if(MSVC OR MINGW)
-#   target_link_libraries(test_grok blosc2 grok)
-#else()
-#   target_link_libraries(test_grok blosc2 grok m)
-#endif()
+add_executable(test_grok test_grok.cpp)
+if(MSVC OR MINGW)
+   target_link_libraries(test_grok blosc2 grokj2k)
+else()
+   target_link_libraries(test_grok blosc2 grokj2k m)
+endif()
