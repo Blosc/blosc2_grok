@@ -63,17 +63,14 @@ int comp_decomp() {
     compressParams.cod_format = GRK_FMT_JP2;
     compressParams.verbose = true;
 
-    grk_codec* codec = NULL;
-    grk_image_comp* components = NULL;
-
     // initialize library
     grk_initialize(NULL, 0, false);
 
     grk_stream_params streamParams;
     grk_set_default_stream_params(&streamParams);
 
-    size_t bufLen = (size_t)numComps * ((precision + 7) / 8) * dimX * dimY;
-    uint8_t *image = (uint8_t*)calloc(bufLen, 1);
+    int64_t bufLen = numComps * dimX * dimY * itemsize;
+    void *image = calloc(bufLen, 1);
 
     // set library message handlers
     grk_set_msg_handlers(infoCallback, nullptr, warningCallback, nullptr, errorCallback, nullptr);
@@ -117,7 +114,8 @@ int comp_decomp() {
     blosc2_dparams dparams = BLOSC2_DPARAMS_DEFAULTS;
     blosc2_storage b2_storage = {.cparams=&cparams, .dparams=&dparams};
 
-    b2nd_context_t *ctx = b2nd_create_ctx(&b2_storage, ndim, shape, chunkshape, blockshape, NULL, 0, NULL, 0);
+    b2nd_context_t *ctx = b2nd_create_ctx(&b2_storage, ndim, shape, chunkshape, blockshape,
+                                          NULL, 0, NULL, 0);
 
     b2nd_array_t *arr;
     BLOSC_ERROR(b2nd_from_cbuffer(ctx, &arr, image, bufLen));
@@ -125,8 +123,8 @@ int comp_decomp() {
         printf("Compression error");
         return -1;
     }
-    printf("Compress OK");
-    printf("Compress ratio: %.3f x\n", (float)arr->sc->nbytes / (float)arr->sc->cbytes);
+    printf("Compress OK:\t");
+    printf("cratio: %.3f x\n", (float)arr->sc->nbytes / (float)arr->sc->cbytes);
 
 //    uint8_t *buffer;
 //    uint64_t buffer_size = itemsize;
@@ -154,15 +152,13 @@ int comp_decomp() {
 //        }
 //    }
 //
-//    printf("Decompress OK\t");
+//    printf("Decompress OK\n");
 
 
 beach:
   // cleanup
   BLOSC_ERROR(b2nd_free_ctx(ctx));
   BLOSC_ERROR(b2nd_free(arr));
-  delete[] components;
-  grk_object_unref(codec);
   free(image);
   //free(buffer);
 
