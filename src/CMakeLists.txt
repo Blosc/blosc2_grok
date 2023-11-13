@@ -7,9 +7,10 @@
 # See LICENSE.txt for details about copyright and rights to use.
 
 set(GRK_BUILD_LIBPNG OFF)
-set(GRK_BUILD_LIBTIFF OFF)
+set(GRK_BUILD_LIBTIFF ON)
 set(GRK_BUILD_LCMS2 ON)
 set(GRK_BUILD_JPEG OFF)
+set(GRK_BUILD_CORE_EXAMPLES OFF)
 
 # Build statically
 #set(BUILD_SHARED_LIBS OFF)
