@@ -19,6 +19,13 @@ set(CMAKE_CXX_FLAGS_DEBUG_INIT "-O0 -g")
 
 message("Building Blosc2 plugin...")
 
+# Propagate CMAKE_OSX_ARCHITECTURES env variable into CMAKE_SYSTEM_PROCESSOR
+if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
+    if("$ENV{CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
+        set(CMAKE_SYSTEM_PROCESSOR arm64)
+    endif()
+endif()
+
 # Find blosc2.h
 find_package(Python COMPONENTS Interpreter NumPy Development.Module REQUIRED)
 message(STATUS "Executable: ${Python_EXECUTABLE}")
