@@ -7,15 +7,18 @@
 # See LICENSE.txt for details about copyright and rights to use.
 
 set(GRK_BUILD_LIBPNG OFF)
-set(GRK_BUILD_LIBTIFF ON)
-set(GRK_BUILD_LCMS2 ON)
 set(GRK_BUILD_JPEG OFF)
 set(GRK_BUILD_CORE_EXAMPLES OFF)
+if (UNIX AND NOT APPLE)
+    # For some reason, Linux is not happy with the below flags
+    set(GRK_BUILD_LIBTIFF OFF)
+    set(GRK_BUILD_LCMS2 OFF)
+endif()
 
 # Build statically
 #set(BUILD_SHARED_LIBS OFF)
 #set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-if(APPLE)
+if (APPLE)
     # Apple Rosetta cannot emulate AVX due to Intel patents
     set(ENABLE_AVX2 OFF)
 endif()
@@ -24,7 +27,7 @@ add_subdirectory(grok)
 # Build libblosc2_grok.so
 add_library(blosc2_grok MODULE blosc2_grok.cpp)
 
-if(MSVC OR MINGW)
+if (MSVC OR MINGW)
     # Necessary for compiling blosc2_grok.lib
     set_property(TARGET blosc2_grok PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 endif()

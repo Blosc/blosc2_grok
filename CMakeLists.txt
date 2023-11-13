@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.20)
 project(blosc2_grok LANGUAGES C CXX)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # Needed when working with cibuildwheel and MacOS
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
