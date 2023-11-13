@@ -117,6 +117,7 @@ int blosc2_grok_encoder(
     }
 
     // compress
+    printf("Abans de compress...    \n");
     size = (int)grk_compress(codec, nullptr);
     if (size == 0) {
         fprintf(stderr, "Failed to compress\n");

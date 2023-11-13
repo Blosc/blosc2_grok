@@ -48,14 +48,12 @@ void infoCallback(const char* msg, [[maybe_unused]] void* client_data)
 int comp_decomp() {
     const uint32_t dimX = 640;
     const uint32_t dimY = 480;
-    const uint32_t numComps = 3;
-    const uint32_t precision = 8;
-    uint64_t compressedLength = 0;
+    const uint16_t numComps = 3;
     int8_t ndim = 3;
     int64_t shape[] = {numComps, dimX, dimY};
     int32_t chunkshape[] = {numComps, (int32_t) dimX, (int32_t) dimY};
     int32_t blockshape[] = {numComps, (int32_t) dimX, (int32_t) dimY};
-    uint8_t itemsize = 4;
+    uint8_t itemsize = 1;
 
     // initialize compress parameters
     grk_cparameters compressParams;
@@ -67,7 +65,14 @@ int comp_decomp() {
     grk_set_default_stream_params(&streamParams);
 
     int64_t bufLen = numComps * dimX * dimY * itemsize;
-    void *image = calloc(bufLen, 1);
+    int32_t *image = (int32_t*)malloc(bufLen);
+    int32_t comp_size = dimX * dimY;
+    for (uint16_t compno = 0; compno < numComps; ++compno) {
+        //memset((void*)(image + (compno * comp_size)), compno + 1, dimX * dimY * sizeof(int32_t));
+        for (uint32_t i = 0; i < dimX * dimY; ++i) {
+            image[compno * comp_size + i] += 1;
+        }
+    }
 
     // set library message handlers
     grk_set_msg_handlers(infoCallback, nullptr, warningCallback, nullptr, errorCallback, nullptr);
