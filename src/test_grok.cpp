@@ -63,9 +63,6 @@ int comp_decomp() {
     compressParams.cod_format = GRK_FMT_JP2;
     compressParams.verbose = true;
 
-    // initialize library
-    grk_initialize(NULL, 0, false);
-
     grk_stream_params streamParams;
     grk_set_default_stream_params(&streamParams);
 
@@ -109,7 +106,6 @@ int comp_decomp() {
     codec_params.compressParams = compressParams;
     codec_params.streamParams = streamParams;
     cparams.codec_params = &codec_params;
-    grk_initialize(nullptr, codec_params.nthreads, compressParams.verbose);
 
     blosc2_dparams dparams = BLOSC2_DPARAMS_DEFAULTS;
     blosc2_storage b2_storage = {.cparams=&cparams, .dparams=&dparams};
@@ -120,7 +116,7 @@ int comp_decomp() {
     b2nd_array_t *arr;
     BLOSC_ERROR(b2nd_from_cbuffer(ctx, &arr, image, bufLen));
     if((arr->sc->nbytes <= 0) || (arr->sc->nbytes > bufLen)) {
-        printf("Compression error");
+        printf("Compression error\n");
         return -1;
     }
     printf("Compress OK:\t");
@@ -168,6 +164,7 @@ beach:
 int main(void) {
   // Initialization
   blosc2_init();
+  grk_initialize(NULL, 0, true);
 
   int error = comp_decomp();
 
