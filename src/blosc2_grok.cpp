@@ -63,7 +63,7 @@ int blosc2_grok_encoder(
     streamParams->buf = data.get();
     streamParams->buf_len = bufLen;
 
-    // create blank image
+    // create image from input
     auto* components = new grk_image_comp[numComps];
     for(uint32_t i = 0; i < numComps; ++i) {
         auto c = components + i;
@@ -79,7 +79,6 @@ int blosc2_grok_encoder(
 
     // fill in component data
     // see grok.h header for full details of image structure
-
     auto *ptr = (uint8_t*)input;
     for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
         auto comp = image->comps + compno;

@@ -16,13 +16,11 @@
 
 **********************************************************************/
 
-#include <memory>
 #include <cmath>
 #include <cstdio>
 #include <string>
 
 #include "blosc2.h"
-#include "blosc2/codecs-registry.h"
 #include "b2nd.h"
 #include "grok.h"
 #include "blosc2_grok.h"
@@ -65,7 +63,7 @@ int comp_decomp() {
     grk_set_default_stream_params(&streamParams);
 
     int64_t bufLen = numComps * dimX * dimY * itemsize;
-    int32_t *image = (int32_t*)malloc(bufLen);
+    auto *image = (int32_t*)malloc(bufLen);
     int32_t comp_size = dimX * dimY;
     for (uint16_t compno = 0; compno < numComps; ++compno) {
         //memset((void*)(image + (compno * comp_size)), compno + 1, dimX * dimY * sizeof(int32_t));
@@ -171,11 +169,11 @@ beach:
 int main(void) {
   // Initialization
   blosc2_init();
-  grk_initialize(NULL, 0, true);
+  blosc2_grok_init(0, true);
 
   int error = comp_decomp();
 
-  grk_deinitialize();
+  blosc2_grok_destroy();
   blosc2_destroy();
   return error;
 }
