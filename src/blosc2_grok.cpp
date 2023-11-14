@@ -13,7 +13,6 @@
 #include "grok.h"
 #include "blosc2_grok.h"
 
-
 int blosc2_grok_encoder(
     const uint8_t *input,
     int32_t input_len,
@@ -117,12 +116,16 @@ int blosc2_grok_encoder(
     }
 
     // compress
-    printf("Abans de compress...    \n");
     size = (int)grk_compress(codec, nullptr);
     if (size == 0) {
         fprintf(stderr, "Failed to compress\n");
         goto beach;
     }
+    if (size > output_len) {
+        // Uncompressible data
+        return 0;
+    }
+    memcpy(output, streamParams->buf, size);
 
     printf("Compression succeeded: %d bytes used.\n", size);
 
@@ -136,57 +139,7 @@ beach:
     return size;
 }
 
-// Decompress
-struct ReadStreamInfo
-{
-    ReadStreamInfo(grk_stream_params* streamParams)
-        : streamParams_(streamParams), data_(nullptr), dataLen_(0), offset_(0), fp_(nullptr)
-    {}
-    grk_stream_params* streamParams_;
-    uint8_t* data_;
-    size_t dataLen_;
-    size_t offset_;
-    FILE* fp_;
-};
-
-size_t stream_read_fn(uint8_t* buffer, size_t numBytes, void* user_data)
-{
-    auto sinfo = (ReadStreamInfo*)user_data;
-    size_t readBytes = numBytes;
-    if(sinfo->data_)
-    {
-        size_t bytesAvailable = sinfo->dataLen_ - sinfo->offset_;
-        readBytes = std::min(numBytes, bytesAvailable);
-    }
-    if(readBytes)
-    {
-        if(sinfo->data_)
-            memcpy(buffer, sinfo->data_ + sinfo->offset_, readBytes);
-        else if(sinfo->fp_)
-        {
-            readBytes = fread(buffer, 1, readBytes, sinfo->fp_);
-        }
-    }
-
-    return readBytes;
-}
-bool stream_seek_fn(uint64_t offset, void* user_data)
-{
-    auto sinfo = (ReadStreamInfo*)user_data;
-    if(offset <= sinfo->dataLen_)
-        sinfo->offset_ = offset;
-    else
-        sinfo->offset_ = sinfo->dataLen_;
-    if(sinfo->fp_)
-    {
-        return fseek(sinfo->fp_, (long int)offset, SEEK_SET) == 0;
-    }
-    else
-    {
-        return true;
-    }
-}
-
+// Decompress a block
 int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output, int32_t output_len,
                         uint8_t meta, blosc2_dparams *dparams, const void *chunk) {
     int rc = EXIT_FAILURE;
@@ -210,9 +163,6 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
     // initialize decompressor
     grk_stream_params streamParams;
     grk_set_default_stream_params(&streamParams);
-    //ReadStreamInfo sinfo(&streamParams);
-    //sinfo.data_ = (uint8_t *)input;
-    //sinfo.dataLen_ = input_len;
 
     streamParams.stream_len = input_len;
     streamParams.buf = (uint8_t *)input;
