@@ -46,12 +46,12 @@ void infoCallback(const char* msg, [[maybe_unused]] void* client_data)
 int comp_decomp() {
     const uint32_t dimX = 640;
     const uint32_t dimY = 480;
-    const uint16_t numComps = 3;
+    const uint16_t numComps = 1;
     int8_t ndim = 3;
     int64_t shape[] = {numComps, dimX, dimY};
     int32_t chunkshape[] = {numComps, (int32_t) dimX, (int32_t) dimY};
     int32_t blockshape[] = {numComps, (int32_t) dimX, (int32_t) dimY};
-    uint8_t itemsize = 1;
+    uint8_t itemsize = 2;
 
     // initialize compress parameters
     grk_cparameters compressParams;
@@ -63,17 +63,20 @@ int comp_decomp() {
     grk_set_default_stream_params(&streamParams);
 
     int64_t bufLen = numComps * dimX * dimY * itemsize;
-    auto *image = (int32_t*)malloc(bufLen);
-    int32_t comp_size = dimX * dimY;
-    for (uint16_t compno = 0; compno < numComps; ++compno) {
+    auto *image = (int16_t*)malloc(bufLen);
+    int comp_size = dimX * dimY;
+    for (int compno = 0; compno < numComps; ++compno) {
         //memset((void*)(image + (compno * comp_size)), compno + 1, dimX * dimY * sizeof(int32_t));
-        for (uint32_t i = 0; i < dimX * dimY; ++i) {
-            image[compno * comp_size + i] += 1;
+        for (int i = 0; i < dimX * dimY; ++i) {
+            //image[compno * comp_size + i] += 1;
+            image[compno * comp_size + i] = compno * comp_size + i + 1;
         }
     }
 
     // set library message handlers
-    grk_set_msg_handlers(infoCallback, nullptr, warningCallback, nullptr, errorCallback, nullptr);
+    grk_set_msg_handlers(infoCallback, nullptr,
+                         warningCallback, nullptr,
+                         errorCallback, nullptr);
 
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
     cparams.compcode = 160;
@@ -100,12 +103,6 @@ int comp_decomp() {
 
     // Codec parameters
     blosc2_grok_params codec_params = {0};
-    codec_params.qfactor = 255;
-    codec_params.isJPH = false;
-    codec_params.color_space = 0;
-    codec_params.dimX = dimX;
-    codec_params.dimY = dimY;
-    codec_params.nthreads = 0;
     codec_params.compressParams = compressParams;
     codec_params.streamParams = streamParams;
     cparams.codec_params = &codec_params;

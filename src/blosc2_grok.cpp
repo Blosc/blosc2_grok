@@ -54,8 +54,7 @@ int blosc2_grok_encoder(
     blosc2_grok_params *codec_params = (blosc2_grok_params *)cparams->codec_params;
     grk_cparameters *compressParams = &codec_params->compressParams;
     grk_stream_params *streamParams = &codec_params->streamParams;
-    grk_set_default_stream_params(streamParams);
-    //WriteStreamInfo sinfo(&streamParams);
+    //grk_set_default_stream_params(streamParams);
 
     std::unique_ptr<uint8_t[]> data;
     size_t bufLen = (size_t)numComps * ((precision + 7) / 8) * dimX * dimY;
@@ -75,7 +74,7 @@ int blosc2_grok_encoder(
         c->sgnd = false;
     }
     grk_image* image = grk_image_new(
-        numComps, components, GRK_CLRSPC_SRGB, true);
+        numComps, components, GRK_CLRSPC_GRAY, true);
 
     // fill in component data
     // see grok.h header for full details of image structure
@@ -85,21 +84,27 @@ int blosc2_grok_encoder(
         auto compWidth = comp->w;
         auto compHeight = comp->h;
         auto compData = comp->data;
-        if(!compData) {
+        if (!compData) {
             fprintf(stderr, "Image has null data for component %d\n", compno);
             goto beach;
         }
         // fill in component data, taking component stride into account
-        // in this example, we just zero out each component
         auto srcData = new int32_t[compWidth * compHeight];
-
-        uint32_t len = compWidth * compHeight * typesize;
-        memcpy(srcData, ptr, len);
-        ptr += len;
+        for (uint32_t j = 0; j < compHeight; ++j) {
+            for (uint32_t i = 0; i < compWidth; ++i) {
+                memcpy(srcData + j * compWidth + i, ptr, typesize);
+                //srcData[j * compWidth + i] = ptr[0];
+                ptr += typesize;
+            }
+        }
+        //uint32_t len = compWidth * compHeight * typesize;
+        //memcpy(srcData, ptr, len);
+        //ptr += len;
+        // in this example, we just zero out each component
         //memset(srcData, 0, compWidth * compHeight * sizeof(int32_t));
 
         auto srcPtr = srcData;
-        for(uint32_t j = 0; j < compHeight; ++j) {
+        for (uint32_t j = 0; j < compHeight; ++j) {
             memcpy(compData, srcPtr, compWidth * sizeof(int32_t));
             srcPtr += compWidth;
             compData += comp->stride;
@@ -162,11 +167,8 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
     // initialize decompressor
     grk_stream_params streamParams;
     grk_set_default_stream_params(&streamParams);
-
-    streamParams.stream_len = input_len;
     streamParams.buf = (uint8_t *)input;
     streamParams.buf_len = input_len;
-
     codec = grk_decompress_init(&streamParams, &decompressParams.core);
     if (!codec) {
         fprintf(stderr, "Failed to set up decompressor\n");

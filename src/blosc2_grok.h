@@ -22,12 +22,6 @@ extern "C" {
 #include "b2nd.h"
 
 typedef struct {
-    uint8_t qfactor;
-    bool isJPH;
-    uint8_t color_space;
-    uint32_t dimX;
-    uint32_t dimY;
-    uint32_t nthreads;
     grk_cparameters compressParams;
     grk_stream_params streamParams;
 } blosc2_grok_params;
