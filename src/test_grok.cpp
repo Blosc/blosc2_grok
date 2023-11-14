@@ -88,7 +88,7 @@ int comp_decomp() {
     grok_codec.complib = 1;
     grok_codec.version = 0;
     grok_codec.encoder = blosc2_grok_encoder;
-    //grok_codec.decoder = blosc2_grok_decoder;
+    grok_codec.decoder = blosc2_grok_decoder;
     int rc = blosc2_register_codec(&grok_codec);
     if (rc < 0) {
         printf("Error registering codec\n");
@@ -127,15 +127,16 @@ int comp_decomp() {
     printf("Compress OK:\t");
     printf("cratio: %.3f x\n", (float)arr->sc->nbytes / (float)arr->sc->cbytes);
 
-//    uint8_t *buffer;
-//    uint64_t buffer_size = itemsize;
-//    for (int i = 0; i < arr->ndim; ++i) {
-//        buffer_size *= arr->shape[i];
-//    }
-//    buffer = static_cast<uint8_t *>(malloc(buffer_size));
-//
-//    BLOSC_ERROR(b2nd_to_cbuffer(arr, buffer, buffer_size));
-//
+    // Decompress
+    uint8_t *buffer;
+    uint64_t buffer_size = itemsize;
+    for (int i = 0; i < arr->ndim; ++i) {
+        buffer_size *= arr->shape[i];
+    }
+    buffer = static_cast<uint8_t *>(malloc(buffer_size));
+
+    BLOSC_ERROR(b2nd_to_cbuffer(arr, buffer, buffer_size));
+
 //    // Check that the decompressed data is ok
 //    double tolerance = 0.1;
 //    for (int i = 0; i < (buffer_size / itemsize); i++) {
@@ -161,10 +162,11 @@ beach:
   BLOSC_ERROR(b2nd_free_ctx(ctx));
   BLOSC_ERROR(b2nd_free(arr));
   free(image);
-  //free(buffer);
+  free(buffer);
 
   return BLOSC2_ERROR_SUCCESS;
 }
+
 
 int main(void) {
   // Initialization

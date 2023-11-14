@@ -136,6 +136,158 @@ beach:
     return size;
 }
 
+// Decompress
+struct ReadStreamInfo
+{
+    ReadStreamInfo(grk_stream_params* streamParams)
+        : streamParams_(streamParams), data_(nullptr), dataLen_(0), offset_(0), fp_(nullptr)
+    {}
+    grk_stream_params* streamParams_;
+    uint8_t* data_;
+    size_t dataLen_;
+    size_t offset_;
+    FILE* fp_;
+};
+
+size_t stream_read_fn(uint8_t* buffer, size_t numBytes, void* user_data)
+{
+    auto sinfo = (ReadStreamInfo*)user_data;
+    size_t readBytes = numBytes;
+    if(sinfo->data_)
+    {
+        size_t bytesAvailable = sinfo->dataLen_ - sinfo->offset_;
+        readBytes = std::min(numBytes, bytesAvailable);
+    }
+    if(readBytes)
+    {
+        if(sinfo->data_)
+            memcpy(buffer, sinfo->data_ + sinfo->offset_, readBytes);
+        else if(sinfo->fp_)
+        {
+            readBytes = fread(buffer, 1, readBytes, sinfo->fp_);
+        }
+    }
+
+    return readBytes;
+}
+bool stream_seek_fn(uint64_t offset, void* user_data)
+{
+    auto sinfo = (ReadStreamInfo*)user_data;
+    if(offset <= sinfo->dataLen_)
+        sinfo->offset_ = offset;
+    else
+        sinfo->offset_ = sinfo->dataLen_;
+    if(sinfo->fp_)
+    {
+        return fseek(sinfo->fp_, (long int)offset, SEEK_SET) == 0;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output, int32_t output_len,
+                        uint8_t meta, blosc2_dparams *dparams, const void *chunk) {
+    int rc = EXIT_FAILURE;
+
+    uint16_t numTiles = 0;
+
+    // initialize decompress parameters
+    grk_decompress_parameters decompressParams;
+    grk_decompress_set_default_params(&decompressParams);
+    decompressParams.compressionLevel = GRK_DECOMPRESS_COMPRESSION_LEVEL_DEFAULT;
+    decompressParams.verbose_ = true;
+
+    grk_image *image = nullptr;
+    grk_codec *codec = nullptr;
+
+    // initialize library
+    grk_initialize(nullptr, 0, false);
+
+    printf("Decompressing buffer\n");
+
+    // initialize decompressor
+    grk_stream_params streamParams;
+    grk_set_default_stream_params(&streamParams);
+    //ReadStreamInfo sinfo(&streamParams);
+    //sinfo.data_ = (uint8_t *)input;
+    //sinfo.dataLen_ = input_len;
+
+    streamParams.stream_len = input_len;
+    streamParams.buf = (uint8_t *)input;
+    streamParams.buf_len = input_len;
+
+    codec = grk_decompress_init(&streamParams, &decompressParams.core);
+    if (!codec) {
+        fprintf(stderr, "Failed to set up decompressor\n");
+        goto beach;
+    }
+
+    // read j2k header
+    grk_header_info headerInfo;
+    memset(&headerInfo, 0, sizeof(headerInfo));
+    if (!grk_decompress_read_header(codec, &headerInfo)) {
+        fprintf(stderr, "Failed to read the header\n");
+        goto beach;
+    }
+
+    // retrieve image that will store uncompressed image data
+    image = grk_decompress_get_composited_image(codec);
+    if (!image) {
+        fprintf(stderr, "Failed to retrieve image \n");
+        goto beach;
+    }
+
+    numTiles = (uint16_t)(headerInfo.t_grid_width * headerInfo.t_grid_height);
+    printf("\nImage Info\n");
+    printf("Width: %d\n", image->x1 - image->x0);
+    printf("Height: %d\n", image->y1 - image->y0);
+    printf("Number of components: %d\n", image->numcomps);
+    for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
+        printf("Precision of component %d : %d\n", compno, image->comps[compno].prec);
+    }
+    printf("Number of tiles: %d\n", numTiles);
+    if (numTiles > 1) {
+        printf("Nominal tile dimensions: (%d,%d)\n", headerInfo.t_width, headerInfo.t_height);
+    }
+
+    // decompress all tiles
+    if (!grk_decompress(codec, nullptr))
+        goto beach;
+
+    // see grok.h header for full details of image structure
+    for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
+        auto comp = image->comps + compno;
+        auto compWidth = comp->w;
+        auto compHeight = comp->h;
+        auto compData = comp->data;
+        if (!compData) {
+            fprintf(stderr, "Image has null data for component %d\n", compno);
+            goto beach;
+        }
+        printf("Component %d : dimensions (%d,%d) at precision %d\n",
+               compno, compWidth, compHeight, comp->prec);
+
+        // copy data, taking component stride into account
+        auto copiedData = new int32_t[compWidth * compHeight];
+        auto copyPtr = copiedData;
+        for (uint32_t j = 0; j < compHeight; ++j) {
+            memcpy(copyPtr, compData, compWidth * sizeof(int32_t));
+            copyPtr += compWidth;
+            compData += comp->stride;
+        }
+        delete[] copiedData;
+    }
+
+    rc = EXIT_SUCCESS;
+beach:
+    // cleanup
+    grk_object_unref(codec);
+    grk_deinitialize();
+
+    return rc;
+}
 
 void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     // initialize library

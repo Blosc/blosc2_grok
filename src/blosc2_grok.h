@@ -42,6 +42,9 @@ int blosc2_grok_encoder(
     const void* chunk
 );
 
+int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output, int32_t output_len,
+                        uint8_t meta, blosc2_dparams *dparams, const void *chunk);
+
 void blosc2_grok_init(uint32_t nthreads, bool verbose);
 void blosc2_grok_destroy();
 
