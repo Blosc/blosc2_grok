@@ -135,8 +135,7 @@ beach:
 // Decompress a block
 int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output, int32_t output_len,
                         uint8_t meta, blosc2_dparams *dparams, const void *chunk) {
-    int rc = EXIT_FAILURE;
-    uint16_t numTiles = 0;
+    int size = -1;
 
     // initialize decompress parameters
     grk_decompress_parameters decompressParams;
@@ -173,19 +172,6 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
         goto beach;
     }
 
-//    numTiles = (uint16_t)(headerInfo.t_grid_width * headerInfo.t_grid_height);
-//    printf("\nImage Info\n");
-//    printf("Width: %d\n", image->x1 - image->x0);
-//    printf("Height: %d\n", image->y1 - image->y0);
-//    printf("Number of components: %d\n", image->numcomps);
-//    for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
-//        printf("Precision of component %d : %d\n", compno, image->comps[compno].prec);
-//    }
-//    printf("Number of tiles: %d\n", numTiles);
-//    if (numTiles > 1) {
-//        printf("Nominal tile dimensions: (%d,%d)\n", headerInfo.t_width, headerInfo.t_height);
-//    }
-
     // decompress all tiles
     if (!grk_decompress(codec, nullptr))
         goto beach;
@@ -215,12 +201,12 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
         }
     }
 
-    rc = output_len;
+    size = output_len;
 beach:
     // cleanup
     grk_object_unref(codec);
 
-    return rc;
+    return size;
 }
 
 void blosc2_grok_init(uint32_t nthreads, bool verbose) {

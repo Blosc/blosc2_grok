@@ -16,29 +16,11 @@
 
 #include <cmath>
 #include <cstdio>
-#include <string>
 
 #include "blosc2.h"
 #include "b2nd.h"
 #include "grok.h"
 #include "blosc2_grok.h"
-
-
-void errorCallback(const char* msg, [[maybe_unused]] void* client_data)
-{
-    auto t = std::string(msg) + "\n";
-    fprintf(stderr, t.c_str());
-}
-void warningCallback(const char* msg, [[maybe_unused]] void* client_data)
-{
-    auto t = std::string(msg) + "\n";
-    fprintf(stdout, t.c_str());
-}
-void infoCallback(const char* msg, [[maybe_unused]] void* client_data)
-{
-    auto t = std::string(msg) + "\n";
-    fprintf(stdout, t.c_str());
-}
 
 
 int comp_decomp() {
@@ -63,16 +45,12 @@ int comp_decomp() {
     int64_t bufLen = numComps * dimX * dimY * itemsize;
     auto *image = (uint16_t*)malloc(bufLen);
     int comp_size = dimX * dimY;
+    // Fill with data not exceeding 16 bits in range (cos() comes handy here)
     for (int compno = 0; compno < numComps; ++compno) {
         for (int i = 0; i < dimX * dimY; ++i) {
-            image[compno * comp_size + i] = compno * comp_size + (int16_t)(cos(i) + 1);
+            image[compno * comp_size + i] = compno * comp_size + (int16_t)(cos(i / 10) + 1);
         }
     }
-
-    // set library message handlers
-    grk_set_msg_handlers(infoCallback, nullptr,
-                         warningCallback, nullptr,
-                         errorCallback, nullptr);
 
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
     cparams.compcode = 160;
@@ -139,25 +117,24 @@ int comp_decomp() {
 
     printf("Successful image roundtrip!\n");
 
-beach:
-  // cleanup
-  BLOSC_ERROR(b2nd_free_ctx(ctx));
-  BLOSC_ERROR(b2nd_free(arr));
-  free(image);
-  free(buffer);
+    // cleanup
+    BLOSC_ERROR(b2nd_free_ctx(ctx));
+    BLOSC_ERROR(b2nd_free(arr));
+    free(image);
+    free(buffer);
 
-  return BLOSC2_ERROR_SUCCESS;
+    return BLOSC2_ERROR_SUCCESS;
 }
 
 
 int main(void) {
-  // Initialization
-  blosc2_init();
-  blosc2_grok_init(0, true);
+    // Initialization
+    blosc2_init();
+    blosc2_grok_init(0, true);
 
-  int error = comp_decomp();
+    int error = comp_decomp();
 
-  blosc2_grok_destroy();
-  blosc2_destroy();
-  return error;
+    blosc2_grok_destroy();
+    blosc2_destroy();
+    return error;
 }
