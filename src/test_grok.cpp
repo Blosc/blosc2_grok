@@ -61,13 +61,11 @@ int comp_decomp() {
     grk_set_default_stream_params(&streamParams);
 
     int64_t bufLen = numComps * dimX * dimY * itemsize;
-    auto *image = (int16_t*)malloc(bufLen);
+    auto *image = (uint16_t*)malloc(bufLen);
     int comp_size = dimX * dimY;
     for (int compno = 0; compno < numComps; ++compno) {
-        //memset((void*)(image + (compno * comp_size)), compno + 1, dimX * dimY * sizeof(int32_t));
         for (int i = 0; i < dimX * dimY; ++i) {
-            //image[compno * comp_size + i] += 1;
-            image[compno * comp_size + i] = compno * comp_size + i + 1;
+            image[compno * comp_size + i] = compno * comp_size + (int16_t)(cos(i) + 1);
         }
     }
 
@@ -121,12 +119,12 @@ int comp_decomp() {
     printf("cratio: %.3f x\n", (float)arr->sc->nbytes / (float)arr->sc->cbytes);
 
     // Decompress
-    uint8_t *buffer;
+    uint16_t *buffer;
     uint64_t buffer_size = itemsize;
     for (int i = 0; i < arr->ndim; ++i) {
         buffer_size *= arr->shape[i];
     }
-    buffer = static_cast<uint8_t *>(malloc(buffer_size));
+    buffer = (uint16_t*)malloc(buffer_size);
 
     BLOSC_ERROR(b2nd_to_cbuffer(arr, buffer, buffer_size));
     printf("Decompress OK\n");

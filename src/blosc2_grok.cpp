@@ -91,15 +91,9 @@ int blosc2_grok_encoder(
         for (uint32_t j = 0; j < compHeight; ++j) {
             for (uint32_t i = 0; i < compWidth; ++i) {
                 memcpy(srcData + j * compWidth + i, ptr, typesize);
-                //srcData[j * compWidth + i] = ptr[0];
                 ptr += typesize;
             }
         }
-        //uint32_t len = compWidth * compHeight * typesize;
-        //memcpy(srcData, ptr, len);
-        //ptr += len;
-        // in this example, we just zero out each component
-        //memset(srcData, 0, compWidth * compHeight * sizeof(int32_t));
 
         auto srcPtr = srcData;
         for (uint32_t j = 0; j < compHeight; ++j) {
@@ -219,14 +213,11 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
         memset(output, 0, output_len);
         auto copyPtr = output;
         for (uint32_t j = 0; j < compHeight; ++j) {
-            memcpy(copyPtr, compData, compWidth * sizeof(int32_t));
-            copyPtr += compWidth;
-            compData += comp->stride;
             auto compData = comp->data + compWidth * j;
             for (uint32_t i = 0; i < compWidth; ++i) {
                 memcpy(copyPtr, compData, itemsize);
                 copyPtr += itemsize;
-                compData += sizeof(int32_t);
+                compData += 1;
             }
         }
     }
