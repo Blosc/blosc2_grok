@@ -123,8 +123,6 @@ int blosc2_grok_encoder(
     }
     memcpy(output, streamParams->buf, size);
 
-    printf("Compression succeeded: %d bytes used.\n", size);
-
 beach:
     // cleanup
     delete[] components;
@@ -148,8 +146,6 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
 
     grk_image *image = nullptr;
     grk_codec *codec = nullptr;
-
-    printf("Decompressing buffer\n");
 
     // initialize decompressor
     grk_stream_params streamParams;
@@ -177,18 +173,18 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
         goto beach;
     }
 
-    numTiles = (uint16_t)(headerInfo.t_grid_width * headerInfo.t_grid_height);
-    printf("\nImage Info\n");
-    printf("Width: %d\n", image->x1 - image->x0);
-    printf("Height: %d\n", image->y1 - image->y0);
-    printf("Number of components: %d\n", image->numcomps);
-    for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
-        printf("Precision of component %d : %d\n", compno, image->comps[compno].prec);
-    }
-    printf("Number of tiles: %d\n", numTiles);
-    if (numTiles > 1) {
-        printf("Nominal tile dimensions: (%d,%d)\n", headerInfo.t_width, headerInfo.t_height);
-    }
+//    numTiles = (uint16_t)(headerInfo.t_grid_width * headerInfo.t_grid_height);
+//    printf("\nImage Info\n");
+//    printf("Width: %d\n", image->x1 - image->x0);
+//    printf("Height: %d\n", image->y1 - image->y0);
+//    printf("Number of components: %d\n", image->numcomps);
+//    for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
+//        printf("Precision of component %d : %d\n", compno, image->comps[compno].prec);
+//    }
+//    printf("Number of tiles: %d\n", numTiles);
+//    if (numTiles > 1) {
+//        printf("Nominal tile dimensions: (%d,%d)\n", headerInfo.t_width, headerInfo.t_height);
+//    }
 
     // decompress all tiles
     if (!grk_decompress(codec, nullptr))
@@ -204,9 +200,6 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
             fprintf(stderr, "Image has null data for component %d\n", compno);
             goto beach;
         }
-        printf("Component %d : dimensions (%d,%d) at precision %d\n",
-               compno, compWidth, compHeight, comp->prec);
-
         // copy data, taking component stride into account
         // (only works for little endian)
         int itemsize = comp->prec / 8;

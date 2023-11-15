@@ -115,8 +115,8 @@ int comp_decomp() {
         printf("Compression error\n");
         return -1;
     }
-    printf("Compress OK:\t");
-    printf("cratio: %.3f x\n", (float)arr->sc->nbytes / (float)arr->sc->cbytes);
+    printf("Compress OK: %ld bytes used \t", arr->sc->nbytes);
+    printf("(cratio: %.2fx)\n", (float)arr->sc->nbytes / (float)arr->sc->cbytes);
 
     // Decompress
     uint16_t *buffer;
@@ -136,6 +136,8 @@ int comp_decomp() {
             return -1;
         }
     }
+
+    printf("Successful image roundtrip!\n");
 
 beach:
   // cleanup
