@@ -129,26 +129,15 @@ int comp_decomp() {
     buffer = static_cast<uint8_t *>(malloc(buffer_size));
 
     BLOSC_ERROR(b2nd_to_cbuffer(arr, buffer, buffer_size));
+    printf("Decompress OK\n");
 
-//    // Check that the decompressed data is ok
-//    double tolerance = 0.1;
-//    for (int i = 0; i < (buffer_size / itemsize); i++) {
-//        if ((image[i] == 0) || (buffer[i] == 0)) {
-//            if (abs(image[i] - buffer[i]) > tolerance) {
-//            printf("i: %d, data %d, dest %d", i, image[i], buffer[i]);
-//            printf("\n Decompressed data differs too much from original!\n");
-//            return -1;
-//            }
-//        }
-//        else if (abs(image[i] - buffer[i]) > tolerance * fmaxf(image[i], buffer[i])) {
-//            printf("i: %d, data %d, dest %d", i, image[i], buffer[i]);
-//            printf("\n Decompressed data differs too much from original!\n");
-//            return -1;
-//        }
-//    }
-//
-//    printf("Decompress OK\n");
-
+    for (int i = 0; i < (buffer_size / itemsize); i++) {
+        if (image[i] != buffer[i]) {
+            printf("Error: decompressed data differs from original!\n");
+            printf("  position: %d, value in original image: %d, value in output: %d", i, image[i], buffer[i]);
+            return -1;
+        }
+    }
 
 beach:
   // cleanup

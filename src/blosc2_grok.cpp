@@ -136,7 +136,6 @@ beach:
     delete[] components;
     grk_object_unref(codec);
     grk_object_unref(&image->obj);
-    grk_deinitialize();
 
     return size;
 }
@@ -145,7 +144,6 @@ beach:
 int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output, int32_t output_len,
                         uint8_t meta, blosc2_dparams *dparams, const void *chunk) {
     int rc = EXIT_FAILURE;
-
     uint16_t numTiles = 0;
 
     // initialize decompress parameters
@@ -156,9 +154,6 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
 
     grk_image *image = nullptr;
     grk_codec *codec = nullptr;
-
-    // initialize library
-    grk_initialize(nullptr, 0, false);
 
     printf("Decompressing buffer\n");
 
@@ -219,21 +214,27 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
                compno, compWidth, compHeight, comp->prec);
 
         // copy data, taking component stride into account
-        auto copiedData = new int32_t[compWidth * compHeight];
-        auto copyPtr = copiedData;
+        // (only works for little endian)
+        int itemsize = comp->prec / 8;
+        memset(output, 0, output_len);
+        auto copyPtr = output;
         for (uint32_t j = 0; j < compHeight; ++j) {
             memcpy(copyPtr, compData, compWidth * sizeof(int32_t));
             copyPtr += compWidth;
             compData += comp->stride;
+            auto compData = comp->data + compWidth * j;
+            for (uint32_t i = 0; i < compWidth; ++i) {
+                memcpy(copyPtr, compData, itemsize);
+                copyPtr += itemsize;
+                compData += sizeof(int32_t);
+            }
         }
-        delete[] copiedData;
     }
 
-    rc = EXIT_SUCCESS;
+    rc = output_len;
 beach:
     // cleanup
     grk_object_unref(codec);
-    grk_deinitialize();
 
     return rc;
 }
