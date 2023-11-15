@@ -2,9 +2,7 @@
 #
 # Copyright (C) 2023  The Blosc Developers <blosc@blosc.org>
 # https://blosc.org
-# License: BSD 3-Clause (see LICENSE.txt)
-#
-# See LICENSE.txt for details about copyright and rights to use.
+# License: GNU Affero General Public License v3.0 (see LICENSE.txt)
 
 cmake_minimum_required(VERSION 3.20)
 project(blosc2_grok LANGUAGES C CXX)
