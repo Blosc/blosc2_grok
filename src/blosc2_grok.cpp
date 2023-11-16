@@ -11,6 +11,9 @@
 #include "grok.h"
 #include "blosc2_grok.h"
 
+
+grk_cparameters GRK_CPARAMETERS_DEFAULTS = {0};
+
 int blosc2_grok_encoder(
     const uint8_t *input,
     int32_t input_len,
@@ -211,6 +214,112 @@ beach:
 void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     // initialize library
     grk_initialize(nullptr, nthreads, verbose);
+    // initialize grok defaults
+    grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
+}
+
+void blosc2_grok_set_default_params(bool tile_size_on, uint32_t tx0, uint32_t ty0, uint32_t t_width, uint32_t t_height,
+                                    uint16_t numlayers, bool allocationByRateDistoration,
+                                    double layer_rate[GRK_MAX_LAYERS], bool allocationByQuality,
+                                    double layer_distortion[GRK_MAX_LAYERS],
+                                    uint8_t csty, uint8_t numgbits, GRK_PROG_ORDER prog_order,
+                                    uint32_t numpocs,
+                                    uint8_t numresolution, uint32_t cblockw_init, uint32_t cblockh_init, uint8_t cblk_sty,
+                                    bool irreversible, int32_t roi_compno, uint32_t roi_shift, uint32_t res_spec,
+                                    uint32_t prcw_init[GRK_J2K_MAXRLVLS], uint32_t prch_init[GRK_J2K_MAXRLVLS],
+                                    uint32_t image_offset_x0, uint32_t image_offset_y0, uint8_t subsampling_dx,
+                                    uint8_t subsampling_dy, GRK_SUPPORTED_FILE_FMT decod_format,
+                                    GRK_SUPPORTED_FILE_FMT cod_format, bool enableTilePartGeneration,
+                                    uint8_t newTilePartProgressionDivider, uint8_t mct, uint64_t max_cs_size,
+                                    uint64_t max_comp_size, uint16_t rsiz, uint16_t framerate,
+                                    bool write_capture_resolution_from_file, double capture_resolution_from_file[2],
+                                    bool write_capture_resolution, double capture_resolution[2],
+                                    bool write_display_resolution, double display_resolution[2], bool apply_icc_,
+                                    GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, uint32_t numThreads, int32_t deviceId,
+                                    uint32_t duration, uint32_t kernelBuildOptions, uint32_t repeats, bool writePLT,
+                                    bool writeTLM, bool verbose, bool sharedMemoryInterface) {
+    GRK_CPARAMETERS_DEFAULTS.tile_size_on = tile_size_on;
+    GRK_CPARAMETERS_DEFAULTS.tx0 = tx0;
+    GRK_CPARAMETERS_DEFAULTS.ty0 = ty0;
+    GRK_CPARAMETERS_DEFAULTS.t_width = t_width;
+    GRK_CPARAMETERS_DEFAULTS.t_height = t_height;
+
+    GRK_CPARAMETERS_DEFAULTS.numlayers = numlayers;
+    GRK_CPARAMETERS_DEFAULTS.allocationByRateDistoration = allocationByRateDistoration;
+
+    for (int i = 0; i < GRK_MAX_LAYERS; ++i) {
+        GRK_CPARAMETERS_DEFAULTS.layer_rate[i] = layer_rate[i];
+        GRK_CPARAMETERS_DEFAULTS.layer_distortion[i] = layer_distortion[i];
+    }
+    GRK_CPARAMETERS_DEFAULTS.allocationByQuality = allocationByQuality;
+    /*for (int i = 0; i < GRK_NUM_COMMENTS_SUPPORTED; ++i) {
+        GRK_CPARAMETERS_DEFAULTS.comment[i] = comment[i]; // malloc & memcpy
+        GRK_CPARAMETERS_DEFAULTS.comment_len[i] = comment_len[i];
+        GRK_CPARAMETERS_DEFAULTS.is_binary_comment[i] = is_binary_comment[i];
+    }
+    GRK_CPARAMETERS_DEFAULTS.num_comments = num_comments;*/
+
+    GRK_CPARAMETERS_DEFAULTS.csty = csty;
+    GRK_CPARAMETERS_DEFAULTS.numgbits = numgbits;
+    GRK_CPARAMETERS_DEFAULTS.prog_order = prog_order;
+    for (int i = 0; i < GRK_J2K_MAXRLVLS; ++i) {
+        // GRK_CPARAMETERS_DEFAULTS.progression[i] = progression[i];
+        GRK_CPARAMETERS_DEFAULTS.prcw_init[i] = prcw_init[i];
+        GRK_CPARAMETERS_DEFAULTS.prch_init[i] = prch_init[i];
+    }
+    GRK_CPARAMETERS_DEFAULTS.numpocs = numpocs;
+    GRK_CPARAMETERS_DEFAULTS.numresolution = numresolution;
+
+    GRK_CPARAMETERS_DEFAULTS.cblockw_init = cblockw_init;
+    GRK_CPARAMETERS_DEFAULTS.cblockh_init = cblockh_init;
+    GRK_CPARAMETERS_DEFAULTS.irreversible = irreversible;
+    GRK_CPARAMETERS_DEFAULTS.roi_compno = roi_compno;
+    GRK_CPARAMETERS_DEFAULTS.roi_shift = roi_shift;
+    GRK_CPARAMETERS_DEFAULTS.res_spec = res_spec;
+
+    GRK_CPARAMETERS_DEFAULTS.cblk_sty = cblk_sty;
+
+    GRK_CPARAMETERS_DEFAULTS.image_offset_x0 = image_offset_x0;
+    GRK_CPARAMETERS_DEFAULTS.image_offset_y0 = image_offset_y0;
+    GRK_CPARAMETERS_DEFAULTS.subsampling_dx = subsampling_dx;
+    GRK_CPARAMETERS_DEFAULTS.subsampling_dy = subsampling_dy;
+
+    GRK_CPARAMETERS_DEFAULTS.decod_format = decod_format;
+    GRK_CPARAMETERS_DEFAULTS.cod_format = cod_format;
+    // GRK_CPARAMETERS_DEFAULTS.raw_cp = raw_cp;
+    GRK_CPARAMETERS_DEFAULTS.enableTilePartGeneration = enableTilePartGeneration;
+    GRK_CPARAMETERS_DEFAULTS.newTilePartProgressionDivider = newTilePartProgressionDivider;
+    GRK_CPARAMETERS_DEFAULTS.mct = mct;
+
+    // GRK_CPARAMETERS_DEFAULTS.mct_data = mct_data;
+    GRK_CPARAMETERS_DEFAULTS.max_cs_size = max_cs_size;
+
+    GRK_CPARAMETERS_DEFAULTS.max_comp_size = max_comp_size;
+    GRK_CPARAMETERS_DEFAULTS.rsiz = rsiz;
+    GRK_CPARAMETERS_DEFAULTS.framerate = framerate;
+
+    for (int i = 0; i < 2; ++i) {
+        GRK_CPARAMETERS_DEFAULTS.capture_resolution_from_file[i] = capture_resolution_from_file[i];
+        GRK_CPARAMETERS_DEFAULTS.capture_resolution[i] = capture_resolution[i];
+        GRK_CPARAMETERS_DEFAULTS.display_resolution[i] = display_resolution[i];
+        GRK_CPARAMETERS_DEFAULTS.prcw_init[i] = prcw_init[i];
+    }
+    GRK_CPARAMETERS_DEFAULTS.write_capture_resolution_from_file = write_capture_resolution_from_file;
+    GRK_CPARAMETERS_DEFAULTS.write_capture_resolution = write_capture_resolution;
+    GRK_CPARAMETERS_DEFAULTS.write_display_resolution = write_display_resolution;
+    GRK_CPARAMETERS_DEFAULTS.apply_icc_ = apply_icc_;
+    GRK_CPARAMETERS_DEFAULTS.rateControlAlgorithm = rateControlAlgorithm;
+    GRK_CPARAMETERS_DEFAULTS.numThreads = numThreads;
+    GRK_CPARAMETERS_DEFAULTS.deviceId = deviceId;
+
+    GRK_CPARAMETERS_DEFAULTS.duration = duration;
+    GRK_CPARAMETERS_DEFAULTS.kernelBuildOptions = kernelBuildOptions;
+    GRK_CPARAMETERS_DEFAULTS.repeats = repeats;
+    GRK_CPARAMETERS_DEFAULTS.writePLT = writePLT;
+    GRK_CPARAMETERS_DEFAULTS.writeTLM = writeTLM;
+
+    GRK_CPARAMETERS_DEFAULTS.verbose = verbose;
+    GRK_CPARAMETERS_DEFAULTS.sharedMemoryInterface = sharedMemoryInterface;
 }
 
 void blosc2_grok_destroy() {
