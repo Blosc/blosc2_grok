@@ -187,7 +187,6 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
             goto beach;
         }
         // copy data, taking component stride into account
-        // (only works for little endian)
         int itemsize = comp->prec / 8;
         memset(output, 0, output_len);
         auto copyPtr = output;
