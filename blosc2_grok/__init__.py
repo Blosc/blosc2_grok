@@ -58,6 +58,40 @@ class GrkRateControl(Enum):
     PCRD_OPT = 1  # bisect with only feasible truncation points
 
 
+class GrkProfile(Enum):
+    """
+    Available grok profiles.
+    """
+
+    GRK_PROFILE_NONE = 0x0000
+    GRK_PROFILE_0 = 0x0001
+    GRK_PROFILE_1 = 0x0002
+    GRK_PROFILE_CINEMA_2K = 0x0003
+    GRK_PROFILE_CINEMA_4K = 0x0004
+    GRK_PROFILE_CINEMA_S2K = 0x0005
+    GRK_PROFILE_CINEMA_S4K = 0x0006
+    GRK_PROFILE_CINEMA_LTS = 0x0007
+    GRK_PROFILE_BC_SINGLE = 0x0100  # Has to be combined with the target level (3-0 LSB, value between 0 and 11)
+    GRK_PROFILE_BC_MULTI = 0x0200  # Has to be combined with the target level (3-0 LSB, value between 0 and 11)
+    GRK_PROFILE_BC_MULTI_R = 0x0300  # Has to be combined with the target level (3-0 LSB, value between 0 and 11)
+    GRK_PROFILE_BC_MASK = 0x030F  # Has to be combined with the target level (3-0 LSB, value between 0 and 11)
+    GRK_PROFILE_IMF_2K = 0x0400  # Has to be combined with the target main-level (3-0 LSB, value between 0 and 11)
+    # and sub-level (7-4 LSB, value between 0 and 9)
+    GRK_PROFILE_IMF_4K = 0x0500  # Has to be combined with the target main-level (3-0 LSB, value between 0 and 11)
+    # and sub-level (7-4 LSB, value between 0 and 9)
+    GRK_PROFILE_IMF_8K = 0x0600  # Has to be combined with the target main-level (3-0 LSB, value between 0 and 11)
+    # and sub-level (7-4 LSB, value between 0 and 9)
+    GRK_PROFILE_IMF_2K_R = 0x0700  # Has to be combined with the target main-level (3-0 LSB, value between 0 and 11)
+    # and sub-level (7-4 LSB, value between 0 and 9)
+    GRK_PROFILE_IMF_4K_R = 0x0800  # Has to be combined with the target main-level (3-0 LSB, value between 0 and 11)
+    # and sub-level (7-4 LSB, value between 0 and 9)
+    GRK_PROFILE_IMF_8K_R = 0x0900  # Has to be combined with the target main-level (3-0 LSB, value between 0 and 11)
+    # and sub-level (7-4 LSB, value between 0 and 9)
+    GRK_PROFILE_MASK = 0x0FFF
+    GRK_PROFILE_PART2 = 0x8000  # Must be combined with extensions
+    GRK_PROFILE_PART2_EXTENSIONS_MASK = 0x3FFF
+
+
 def get_libpath():
     system = platform.system()
     if system in ["Linux", "Darwin"]:
@@ -95,27 +129,23 @@ params_defaults = {
     't_height': 0,
     'numlayers': 0,
     'allocationByRateDistoration': False,
-    'layer_rate': [0] * 100,
     'allocationByQuality': False,
-    'layer_distortion': [0] * 100,
     'csty': 0,
-    'numgbits': 0,
+    'numgbits': 2,
     'prog_order': GrkProgOrder.LRCP,
     'numpocs': 0,
-    'numresolution': 0,
-    'cblockw_init': 0,
-    'cblockh_init': 0,
+    'numresolution': 6,
+    'cblockw_init': 64,
+    'cblockh_init': 64,
     'cblk_sty': 0,
     'irreversible': False,
-    'roi_compno': 0,
+    'roi_compno': -1,
     'roi_shift': 0,
     'res_spec': 0,
-    'prcw_init': [0] * 33,
-    'prch_init': [0] * 33,
     'image_offset_x0': 0,
     'image_offset_y0': 0,
-    'subsampling_dx': 0,
-    'subsampling_dy': 0,
+    'subsampling_dx': 1,
+    'subsampling_dy': 1,
     'decod_format': GrkFileFmt.GRK_FMT_UNK,
     'cod_format': GrkFileFmt.GRK_FMT_UNK,
     'enableTilePartGeneration': False,
@@ -125,40 +155,39 @@ params_defaults = {
     'max_comp_size': 0,
     'rsiz': 0,
     'framerate': 0,
-    'write_capture_resolution_from_file': False,
-    'capture_resolution': [0] * 2,
-    'write_display_resolution': False,
-    'display_resolution': [0] * 2,
     'apply_icc_': False,
     'rateControlAlgorithm': GrkRateControl.PCRD_OPT,
     'numThreads': 0,
     'deviceId': 0,
     'duration': 0,
     'kernelBuildOptions': 0,
-    'repeats': 0,
+    'repeats': 1,
     'writePLT': False,
     'writeTLM': False,
+    # 50 - 51
     'verbose': False,
     'sharedMemoryInterface': False,
 }
 
 
+def set_params_defaults(**kwargs):
+    # Check arguments
+    not_supported = [k for k in kwargs.keys() if k not in params_defaults]
+    if not_supported != []:
+        raise ValueError(f"The next params are not supported: {not_supported}")
 
-#
-# def set_params_defaults(**kwargs):
-#     # Check arguments
-#     not_supported = [k for k in kwargs.keys() if k not in params_defaults]
-#     if not_supported != []:
-#         raise ValueError(f"The next params are not supported: {not_supported}")
-#
-#     # Prepare arguments
-#     params = params_defaults.copy()
-#     params.update(kwargs)
-#     args = params.values()
-#     args = list(args)
-#     args[17] = ctypes.c_double(args[17])
-#
-#     lib.set_params_defaults(*args)
+    # Prepare arguments
+    params = params_defaults.copy()
+    params.update(kwargs)
+    args = params.values()
+    args = list(args)
+
+    args[10] = args[10].value
+    args[24] = args[24].value
+    args[25] = args[25].value
+    args[34] = args[34].value
+
+    lib.blosc2_grok_set_default_params(*args)
 
 
 if __name__ == "__main__":
