@@ -31,7 +31,7 @@ void blosc2_grok_destroy();
 
 void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_width, int t_height,
                                    int numlayers, bool allocationByRateDistoration,
-                                   bool allocationByQuality,
+                                   double *layer_rate, bool allocationByQuality, double *layer_distortion,
                                    int csty, int numgbits, GRK_PROG_ORDER prog_order,
                                    int numpocs,
                                    int numresolution, int cblockw_init, int cblockh_init, int cblk_sty,

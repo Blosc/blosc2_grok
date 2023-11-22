@@ -228,7 +228,7 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
 
 void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_width, int t_height,
                                    int numlayers, bool allocationByRateDistoration,
-                                   bool allocationByQuality,
+                                   double *layer_rate, bool allocationByQuality, double *layer_distortion,
                                    int csty, int numgbits, GRK_PROG_ORDER prog_order,
                                    int numpocs,
                                    int numresolution, int cblockw_init, int cblockh_init, int cblk_sty,
@@ -251,10 +251,10 @@ void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_w
     GRK_CPARAMETERS_DEFAULTS.numlayers = numlayers;
     GRK_CPARAMETERS_DEFAULTS.allocationByRateDistoration = allocationByRateDistoration;
 
-    /*for (int i = 0; i < GRK_MAX_LAYERS; ++i) {
+    for (int i = 0; i < GRK_MAX_LAYERS; ++i) {
         GRK_CPARAMETERS_DEFAULTS.layer_rate[i] = layer_rate[i];
         GRK_CPARAMETERS_DEFAULTS.layer_distortion[i] = layer_distortion[i];
-    }*/
+    }
     GRK_CPARAMETERS_DEFAULTS.allocationByQuality = allocationByQuality;
     /*for (int i = 0; i < GRK_NUM_COMMENTS_SUPPORTED; ++i) {
         GRK_CPARAMETERS_DEFAULTS.comment[i] = comment[i]; // malloc & memcpy

@@ -12,6 +12,7 @@ import platform
 from enum import Enum
 from pathlib import Path
 import atexit
+import numpy as np
 
 __version__ = "0.0.0"
 
@@ -131,7 +132,9 @@ params_defaults = {
     't_height': 0,
     'numlayers': 0,
     'allocationByRateDistoration': False,
+    'layer_rate': np.zeros(100, dtype=np.float64),  # compression_ratios grok cmd param
     'allocationByQuality': False,
+    'layer_distortion': np.zeros(100, dtype=np.float64),  # quality grok cmd param
     'csty': 0,
     'numgbits': 2,
     'prog_order': GrkProgOrder.LRCP,
@@ -155,7 +158,7 @@ params_defaults = {
     'mct': 0,
     'max_cs_size': 0,
     'max_comp_size': 0,
-    'rsiz': 0,
+    'rsiz': GrkProfile.GRK_PROFILE_NONE,
     'framerate': 0,
     'apply_icc_': False,
     'rateControlAlgorithm': GrkRateControl.PCRD_OPT,
@@ -183,11 +186,18 @@ def set_params_defaults(**kwargs):
     args = params.values()
     args = list(args)
 
-    args[10] = args[10].value
-    args[24] = args[24].value
-    args[25] = args[25].value
-    args[34] = args[34].value
+    args[12] = args[12].value
+    args[26] = args[26].value
+    args[27] = args[27].value
+    args[33] = args[33].value
+    args[36] = args[36].value
 
+    lib.blosc2_grok_set_default_params.argtypes = ([ctypes.c_bool] + [ctypes.c_int] * 5 + [ctypes.c_bool] +
+                                                   [np.ctypeslib.ndpointer(dtype=np.float64)] + [ctypes.c_bool] +
+                                                   [np.ctypeslib.ndpointer(dtype=np.float64)] +
+                                                   [ctypes.c_int] * 8 + [ctypes.c_bool] + [ctypes.c_int] * 9 +
+                                                   [ctypes.c_bool] + [ctypes.c_int] * 6 + [ctypes.c_bool] +
+                                                   [ctypes.c_int] * 6 + [ctypes.c_bool] * 4)
     lib.blosc2_grok_set_default_params(*args)
 
 
