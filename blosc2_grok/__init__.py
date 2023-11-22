@@ -13,6 +13,8 @@ from enum import Enum
 from pathlib import Path
 import atexit
 
+__version__ = "0.0.0"
+
 
 class GrkProgOrder(Enum):
     """
@@ -164,7 +166,6 @@ params_defaults = {
     'repeats': 1,
     'writePLT': False,
     'writeTLM': False,
-    # 50 - 51
     'verbose': False,
     'sharedMemoryInterface': False,
 }

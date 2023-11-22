@@ -8,11 +8,10 @@
 
 #include <memory>
 
-#include "grok.h"
 #include "blosc2_grok.h"
+#include "blosc2_grok_public.h"
 
-
-grk_cparameters GRK_CPARAMETERS_DEFAULTS = {0};
+static grk_cparameters GRK_CPARAMETERS_DEFAULTS = {0};
 
 int blosc2_grok_encoder(
     const uint8_t *input,
@@ -53,9 +52,17 @@ int blosc2_grok_encoder(
     // initialize compress parameters
     grk_codec* codec = nullptr;
     blosc2_grok_params *codec_params = (blosc2_grok_params *)cparams->codec_params;
-    grk_cparameters *compressParams = &codec_params->compressParams;
-    grk_stream_params *streamParams = &codec_params->streamParams;
-    //grk_set_default_stream_params(streamParams);
+    grk_cparameters *compressParams;
+    grk_stream_params *streamParams;
+
+    if (codec_params == NULL) {
+        compressParams = &GRK_CPARAMETERS_DEFAULTS;
+        streamParams = (grk_stream_params *)malloc(sizeof(grk_stream_params));
+        grk_set_default_stream_params(streamParams);
+    } else {
+        compressParams = &codec_params->compressParams;
+        streamParams = &codec_params->streamParams;
+    }
 
     std::unique_ptr<uint8_t[]> data;
     size_t bufLen = (size_t)numComps * ((precision + 7) / 8) * dimX * dimY;
@@ -110,6 +117,7 @@ int blosc2_grok_encoder(
     // initialize compressor
     codec = grk_compress_init(streamParams, compressParams, image);
     if (!codec) {
+        printf("err code %d\n", codec);
         fprintf(stderr, "Failed to initialize compressor\n");
         goto beach;
     }
@@ -218,22 +226,22 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
 }
 
-void blosc2_grok_set_default_params(bool tile_size_on, uint32_t tx0, uint32_t ty0, uint32_t t_width, uint32_t t_height,
-                                    uint16_t numlayers, bool allocationByRateDistoration,
-                                    bool allocationByQuality,
-                                    uint8_t csty, uint8_t numgbits, GRK_PROG_ORDER prog_order,
-                                    uint32_t numpocs,
-                                    uint8_t numresolution, uint32_t cblockw_init, uint32_t cblockh_init, uint8_t cblk_sty,
-                                    bool irreversible, int32_t roi_compno, uint32_t roi_shift, uint32_t res_spec,
-                                    uint32_t image_offset_x0, uint32_t image_offset_y0, uint8_t subsampling_dx,
-                                    uint8_t subsampling_dy, GRK_SUPPORTED_FILE_FMT decod_format,
-                                    GRK_SUPPORTED_FILE_FMT cod_format, bool enableTilePartGeneration,
-                                    uint8_t newTilePartProgressionDivider, uint8_t mct, uint64_t max_cs_size,
-                                    uint64_t max_comp_size, uint16_t rsiz, uint16_t framerate,
-                                    bool apply_icc_,
-                                    GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, uint32_t numThreads, int32_t deviceId,
-                                    uint32_t duration, uint32_t kernelBuildOptions, uint32_t repeats, bool writePLT,
-                                    bool writeTLM, bool verbose, bool sharedMemoryInterface) {
+void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_width, int t_height,
+                                   int numlayers, bool allocationByRateDistoration,
+                                   bool allocationByQuality,
+                                   int csty, int numgbits, GRK_PROG_ORDER prog_order,
+                                   int numpocs,
+                                   int numresolution, int cblockw_init, int cblockh_init, int cblk_sty,
+                                   bool irreversible, int roi_compno, int roi_shift, int res_spec,
+                                   int image_offset_x0, int image_offset_y0, int subsampling_dx,
+                                   int subsampling_dy, GRK_SUPPORTED_FILE_FMT decod_format,
+                                   GRK_SUPPORTED_FILE_FMT cod_format, bool enableTilePartGeneration,
+                                   int newTilePartProgressionDivider, int mct, int max_cs_size,
+                                   int max_comp_size, int rsiz, int framerate,
+                                   bool apply_icc_,
+                                   GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int numThreads, int deviceId,
+                                   int duration, int kernelBuildOptions, int repeats, bool writePLT,
+                                   bool writeTLM, bool verbose, bool sharedMemoryInterface) {
     GRK_CPARAMETERS_DEFAULTS.tile_size_on = tile_size_on;
     GRK_CPARAMETERS_DEFAULTS.tx0 = tx0;
     GRK_CPARAMETERS_DEFAULTS.ty0 = ty0;

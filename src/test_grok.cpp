@@ -17,11 +17,10 @@
 #include <cmath>
 #include <cstdio>
 
-#include "blosc2.h"
 #include "b2nd.h"
+#include "blosc2.h"
+#include "blosc2_grok_public.h"
 #include "grok.h"
-#include "blosc2_grok.h"
-
 
 int comp_decomp() {
     const uint32_t dimX = 640;
