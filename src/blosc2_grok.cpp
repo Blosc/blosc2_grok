@@ -47,7 +47,8 @@ int blosc2_grok_encoder(
     const uint32_t dimX = blockshape[1];
     const uint32_t dimY = blockshape[2];
     const uint32_t typesize = ((blosc2_schunk*)cparams->schunk)->typesize;
-    const uint32_t precision = typesize * 8;
+    const uint32_t precision = 8 * typesize;
+    //const uint32_t precision = 8 * typesize - 7;
 
     // initialize compress parameters
     grk_codec* codec = nullptr;
@@ -106,6 +107,7 @@ int blosc2_grok_encoder(
         }
 
         auto srcPtr = srcData;
+        printf("stride %d\n", comp->stride);
         for (uint32_t j = 0; j < compHeight; ++j) {
             memcpy(compData, srcPtr, compWidth * sizeof(int32_t));
             srcPtr += compWidth;
@@ -125,6 +127,7 @@ int blosc2_grok_encoder(
     // compress
     size = (int)grk_compress(codec, nullptr);
     if (size == 0) {
+        size = -1;
         fprintf(stderr, "Failed to compress\n");
         goto beach;
     }
@@ -198,7 +201,9 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
             goto beach;
         }
         // copy data, taking component stride into account
-        int itemsize = comp->prec / 8;
+        int itemsize =  (comp->prec / 8);
+        //int itemsize =  ((comp->prec + 7) / 8);
+
         memset(output, 0, output_len);
         auto copyPtr = output;
         for (uint32_t j = 0; j < compHeight; ++j) {
@@ -224,6 +229,7 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     grk_initialize(nullptr, nthreads, verbose);
     // initialize grok defaults
     grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
+    GRK_CPARAMETERS_DEFAULTS.cod_format = GRK_FMT_JP2;
 }
 
 void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_width, int t_height,
@@ -251,7 +257,7 @@ void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_w
     GRK_CPARAMETERS_DEFAULTS.numlayers = numlayers;
     GRK_CPARAMETERS_DEFAULTS.allocationByRateDistoration = allocationByRateDistoration;
 
-    for (int i = 0; i < GRK_MAX_LAYERS; ++i) {
+    for (int i = 0; i < numlayers; ++i) {
         GRK_CPARAMETERS_DEFAULTS.layer_rate[i] = layer_rate[i];
         GRK_CPARAMETERS_DEFAULTS.layer_distortion[i] = layer_distortion[i];
     }

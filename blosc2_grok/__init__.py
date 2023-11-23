@@ -132,9 +132,9 @@ params_defaults = {
     't_height': 0,
     'numlayers': 0,
     'allocationByRateDistoration': False,
-    'layer_rate': np.zeros(100, dtype=np.float64),  # compression_ratios grok cmd param
+    'layer_rate': np.zeros(0, dtype=np.float64),  # compression_ratios grok cmd param
     'allocationByQuality': False,
-    'layer_distortion': np.zeros(100, dtype=np.float64),  # quality grok cmd param
+    'layer_distortion': np.zeros(0, dtype=np.float64),  # quality grok cmd param
     'csty': 0,
     'numgbits': 2,
     'prog_order': GrkProgOrder.LRCP,

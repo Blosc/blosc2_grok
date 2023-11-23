@@ -19,7 +19,7 @@
 
 #include "b2nd.h"
 #include "blosc2.h"
-#include "blosc2_grok_public.h"
+#include "blosc2_grok.h"
 #include "grok.h"
 
 int comp_decomp() {
