@@ -48,7 +48,7 @@ int blosc2_grok_encoder(
     const uint32_t dimY = blockshape[2];
     const uint32_t typesize = ((blosc2_schunk*)cparams->schunk)->typesize;
     const uint32_t precision = 8 * typesize;
-    //const uint32_t precision = 8 * typesize - 7;
+    // const uint32_t precision = 8 * typesize - 7;
 
     // initialize compress parameters
     grk_codec* codec = nullptr;
@@ -107,7 +107,6 @@ int blosc2_grok_encoder(
         }
 
         auto srcPtr = srcData;
-        printf("stride %d\n", comp->stride);
         for (uint32_t j = 0; j < compHeight; ++j) {
             memcpy(compData, srcPtr, compWidth * sizeof(int32_t));
             srcPtr += compWidth;
@@ -202,12 +201,12 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
         }
         // copy data, taking component stride into account
         int itemsize =  (comp->prec / 8);
-        //int itemsize =  ((comp->prec + 7) / 8);
+        // int itemsize =  ((comp->prec + 7) / 8);
 
         memset(output, 0, output_len);
         auto copyPtr = output;
         for (uint32_t j = 0; j < compHeight; ++j) {
-            auto compData = comp->data + compWidth * j;
+            auto compData = comp->data + comp->stride * j;
             for (uint32_t i = 0; i < compWidth; ++i) {
                 memcpy(copyPtr, compData, itemsize);
                 copyPtr += itemsize;
