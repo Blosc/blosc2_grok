@@ -1,4 +1,2 @@
-build
-cmake
-scikit-build
-cibuildwheel
+scikit-build-core
+blosc2

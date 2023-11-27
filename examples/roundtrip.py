@@ -59,7 +59,7 @@ def compress(im, urlpath=None, **kwargs):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Compress the given input image using Blosc2 and OpenHTJ2K',
+        description='Compress the given input image using Blosc2 and grok',
     )
     add_argument = parser.add_argument
     add_argument('inputfile')

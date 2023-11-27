@@ -8,7 +8,7 @@
 ##############################################################################
 
 [build-system]
-requires = ["scikit-build-core", "cmake", "ninja"]
+requires = ["scikit-build-core", "blosc2"]
 build-backend = "scikit_build_core.build"
 
 [project]

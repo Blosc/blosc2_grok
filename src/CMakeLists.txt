@@ -14,8 +14,8 @@ if (UNIX AND NOT APPLE)
 endif()
 
 # Build statically
-#set(BUILD_SHARED_LIBS OFF)
-#set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(BUILD_SHARED_LIBS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if (APPLE)
     # Apple Rosetta cannot emulate AVX due to Intel patents
     set(ENABLE_AVX2 OFF)
