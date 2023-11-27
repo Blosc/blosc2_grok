@@ -7,11 +7,11 @@
 set(GRK_BUILD_LIBPNG OFF)
 set(GRK_BUILD_JPEG OFF)
 set(GRK_BUILD_CORE_EXAMPLES OFF)
-if (UNIX AND NOT APPLE)
+# if (UNIX AND NOT APPLE)
     # For some reason, Linux is not happy with the below flags
-    set(GRK_BUILD_LIBTIFF OFF)
-    set(GRK_BUILD_LCMS2 OFF)
-endif()
+    #    set(GRK_BUILD_LIBTIFF OFF)
+    #    set(GRK_BUILD_LCMS2 OFF)
+    #endif()
 
 # Build statically
 set(BUILD_SHARED_LIBS OFF)
