@@ -32,7 +32,18 @@ extern "C" {
 #include "blosc2/codecs-registry.h"
 
 
+BLOSC2_GROK_EXPORT int blosc2_grok_encoder(
+    const uint8_t *input,
+    int32_t input_len,
+    uint8_t *output,
+    int32_t output_len,
+    uint8_t meta,
+    blosc2_cparams* cparams,
+    const void* chunk
+);
 
+BLOSC2_GROK_EXPORT int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output, int32_t output_len,
+                        uint8_t meta, blosc2_dparams *dparams, const void *chunk);
 
 BLOSC2_GROK_EXPORT codec_info info = {
     .encoder=(char *)"blosc2_grok_encoder",

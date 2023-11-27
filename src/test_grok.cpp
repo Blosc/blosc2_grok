@@ -61,8 +61,8 @@ int comp_decomp() {
     grok_codec.compcode = 160;
     grok_codec.complib = 1;
     grok_codec.version = 0;
-    grok_codec.encoder = blosc2_grok_encoder;
-    grok_codec.decoder = blosc2_grok_decoder;
+    grok_codec.encoder = NULL;
+    grok_codec.decoder = NULL;
     int rc = blosc2_register_codec(&grok_codec);
     if (rc < 0) {
         printf("Error registering codec\n");

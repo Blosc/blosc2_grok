@@ -118,7 +118,6 @@ int blosc2_grok_encoder(
     // initialize compressor
     codec = grk_compress_init(streamParams, compressParams, image);
     if (!codec) {
-        printf("err code %d\n", codec);
         fprintf(stderr, "Failed to initialize compressor\n");
         goto beach;
     }
@@ -228,7 +227,6 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     grk_initialize(nullptr, nthreads, verbose);
     // initialize grok defaults
     grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
-    GRK_CPARAMETERS_DEFAULTS.cod_format = GRK_FMT_JP2;
 }
 
 void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_width, int t_height,
