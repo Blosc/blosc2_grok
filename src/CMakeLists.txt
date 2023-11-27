@@ -4,7 +4,7 @@
 # https://blosc.org
 # License: GNU Affero General Public License v3.0 (see LICENSE.txt)
 
-set(GRK_BUILD_LIBPNG ON)
+set(GRK_BUILD_LIBPNG OFF)
 set(GRK_BUILD_JPEG OFF)
 set(GRK_BUILD_CORE_EXAMPLES OFF)
 # if (UNIX AND NOT APPLE)
