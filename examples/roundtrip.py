@@ -76,7 +76,7 @@ if __name__ == '__main__':
               # 'layer_distortion': layer_distortion,
               # 'irreversible': True,
               }
-    print(args)
+    print(kwargs)
 
     im = Image.open(args.inputfile)
     Path(args.outputfile).unlink(missing_ok=True)
