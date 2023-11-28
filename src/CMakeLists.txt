@@ -20,6 +20,7 @@ if (APPLE)
     # Apple Rosetta cannot emulate AVX due to Intel patents
     set(ENABLE_AVX2 OFF)
 endif()
+set(CMAKE_FIND_FRAMEWORK NEVER)
 add_subdirectory(grok)
 
 # Build libblosc2_grok.so
