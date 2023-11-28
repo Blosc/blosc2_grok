@@ -62,21 +62,32 @@ jobs:
           CIBW_TEST_COMMAND: >
             cmd /V /C "python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif /tmp/MI04_020751.b2nd"
 
-      - name: Build wheels (Linux / Mac OSX)
-        if: ${{ matrix.os != 'windows-latest' && (matrix.arch == 'x86_64' || matrix.arch == 'aarch64') }}
+      - name: Build wheels (Linux / Mac OSX x86_64)
+        if: ${{ matrix.os != 'windows-latest'}}
         uses: pypa/cibuildwheel@v2.14.1
         env:
           # The build requirements should be installed by the pyproject.toml specs
           #CIBW_BEFORE_BUILD: python -m pip install --upgrade pip && python -m pip install -r requirements-build.txt
-          CIBW_BEFORE_BUILD_MACOS: brew install libpng
+          CIBW_BEFORE_BUILD_MACOS: brew reinstall libpng && CMAKE_OSX_ARCHITECTURES=x86_64
           CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
           CIBW_BEFORE_TEST: python -m pip install --upgrade pip && python -m pip install -r requirements-test.txt
           CIBW_TEST_COMMAND: >
             python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif /tmp/MI04_020751.b2nd
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
-          #CIBW_ARCHS_MACOS: "x86_64 arm64"
           #CIBW_ARCHS_MACOS: "universal2"
+
+      - name: Build wheels (Mac OSX arm64)
+        if: ${{ matrix.os != 'windows-latest' && runner.os != 'Linux' }}
+        uses: pypa/cibuildwheel@v2.14.1
+        env:
+          # The build requirements should be installed by the pyproject.toml specs
+          CIBW_BEFORE_BUILD_MACOS: brew reinstall libpng && CMAKE_OSX_ARCHITECTURES=arm64
+          CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
+          CIBW_BEFORE_TEST: python -m pip install --upgrade pip && python -m pip install -r requirements-test.txt
+          CIBW_TEST_COMMAND: >
+            python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif /tmp/MI04_020751.b2nd
+          CIBW_ARCHS_MACOS: "arm64"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
