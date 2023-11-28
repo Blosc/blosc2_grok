@@ -75,7 +75,6 @@ jobs:
             python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif /tmp/MI04_020751.b2nd
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
-          #CIBW_ARCHS_MACOS: "universal2"
 
       - name: Build wheels (Mac OSX arm64)
         if: ${{ matrix.os != 'windows-latest' && runner.os != 'Linux' }}
@@ -84,9 +83,7 @@ jobs:
           # The build requirements should be installed by the pyproject.toml specs
           CIBW_BEFORE_BUILD_MACOS: CMAKE_OSX_ARCHITECTURES=arm64
           CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
-          CIBW_BEFORE_TEST: python -m pip install --upgrade pip && python -m pip install -r requirements-test.txt
-          CIBW_TEST_COMMAND: >
-            python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif /tmp/MI04_020751.b2nd
+          CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
           CIBW_ARCHS_MACOS: "arm64"
 
       - name: Upload wheels
