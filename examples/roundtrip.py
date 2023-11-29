@@ -63,7 +63,6 @@ if __name__ == '__main__':
     )
     add_argument = parser.add_argument
     add_argument('inputfile')
-    add_argument('outputfile')
     args = parser.parse_args()
 
     layer_rate = np.array([10], dtype=np.float64)
@@ -79,10 +78,9 @@ if __name__ == '__main__':
     print(kwargs)
 
     im = Image.open(args.inputfile)
-    Path(args.outputfile).unlink(missing_ok=True)
     # print("mode: ", im.mode)
     # print("bands ", im.getbands())
     # print("size ", im.size)
     # print("info ", im.info)
 
-    array = compress(im, args.outputfile, **kwargs)
+    array = compress(im, **kwargs)

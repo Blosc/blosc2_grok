@@ -60,7 +60,7 @@ jobs:
           CIBW_BUILD: 'cp38-win_amd64 cp39-win_amd64 cp310-win_amd64 cp311-win_amd64'
           CIBW_BEFORE_TEST: python -m pip install --upgrade pip && python -m pip install -r requirements-test.txt
           CIBW_TEST_COMMAND: >
-            cmd /V /C "set BLOSC_TRACE=1 && python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif /tmp/MI04_020751.b2nd"
+            cmd /V /C "set BLOSC_TRACE=1 && python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif"
 
 #      - name: Build wheels (Linux / Mac OSX x86_64)
 #        if: ${{ matrix.os != 'windows-latest'}}
@@ -72,7 +72,7 @@ jobs:
 #          CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
 #          CIBW_BEFORE_TEST: python -m pip install --upgrade pip && python -m pip install -r requirements-test.txt
 #          CIBW_TEST_COMMAND: >
-#            python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif /tmp/MI04_020751.b2nd
+#            BLOSC_TRACE=1 python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif
 #          CIBW_ARCHS_LINUX: ${{ matrix.arch }}
 #          CIBW_ARCHS_MACOS: "x86_64"
 #
