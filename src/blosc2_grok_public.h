@@ -30,6 +30,7 @@ extern "C" {
 
 #include "blosc2.h"
 #include "blosc2/codecs-registry.h"
+#include "grok.h"
 
 
 BLOSC2_GROK_EXPORT int blosc2_grok_encoder(
@@ -49,6 +50,27 @@ BLOSC2_GROK_EXPORT codec_info info = {
     .encoder=(char *)"blosc2_grok_encoder",
     .decoder=(char *)"blosc2_grok_decoder"
 };
+
+#if defined(_MSC_VER)
+// Needed to export functions in Windows
+BLOSC2_GROK_EXPORT void grk_initialize(const char* pluginPath, uint32_t numthreads, bool verbose);
+BLOSC2_GROK_EXPORT void grk_deinitialize();
+BLOSC2_GROK_EXPORT void grk_object_unref(grk_object* obj);
+BLOSC2_GROK_EXPORT grk_image* grk_image_new(uint16_t numcmpts, grk_image_comp* cmptparms,
+                                      GRK_COLOR_SPACE clrspc, bool alloc_data);
+BLOSC2_GROK_EXPORT void grk_set_default_stream_params(grk_stream_params* params);
+BLOSC2_GROK_EXPORT void grk_decompress_set_default_params(grk_decompress_parameters* parameters);
+BLOSC2_GROK_EXPORT grk_codec* grk_decompress_init(grk_stream_params* stream_params,
+                                            grk_decompress_core_params* core_params);
+BLOSC2_GROK_EXPORT bool grk_decompress_read_header(grk_codec* codecWrapper, grk_header_info* header_info);
+BLOSC2_GROK_EXPORT grk_image* grk_decompress_get_composited_image(grk_codec* codecWrapper);
+BLOSC2_GROK_EXPORT bool grk_decompress(grk_codec* codecWrapper, grk_plugin_tile* tile);
+BLOSC2_GROK_EXPORT void grk_compress_set_default_params(grk_cparameters* parameters);
+BLOSC2_GROK_EXPORT grk_codec* grk_compress_init(grk_stream_params* stream_params,
+                                          grk_cparameters* parameters, grk_image* p_image);
+BLOSC2_GROK_EXPORT uint64_t grk_compress(grk_codec* codecWrapper, grk_plugin_tile* tile);
+#endif
+
 
 #ifdef __cplusplus
 }
