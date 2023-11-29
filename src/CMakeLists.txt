@@ -7,11 +7,16 @@
 set(GRK_BUILD_LIBPNG OFF)
 set(GRK_BUILD_JPEG OFF)
 set(GRK_BUILD_CORE_EXAMPLES OFF)
-# if (UNIX AND NOT APPLE)
-# For some reason, Linux is not happy with the below flags
-#    set(GRK_BUILD_LIBTIFF OFF)
-#    set(GRK_BUILD_LCMS2 OFF)
-#endif()
+
+# Needed in the continuous integration
+if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
+    if("$ENV{CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
+        set(GRK_BUILD_LIBTIFF ON)
+        set(GRK_BUILD_LIBPNG ON)
+        set(GRK_BUILD_JPEG ON)
+        set(GRK_BUILD_LCMS2 ON)
+    endif()
+endif()
 
 # Avoid adding unneeded files to the wheel
 set(GRK_BUILD_PKGCONFIG_FILES OFF)
