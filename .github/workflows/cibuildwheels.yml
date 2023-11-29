@@ -60,7 +60,7 @@ jobs:
           CIBW_BUILD: 'cp38-win_amd64 cp39-win_amd64 cp310-win_amd64 cp311-win_amd64'
           CIBW_BEFORE_TEST: python -m pip install --upgrade pip && python -m pip install -r requirements-test.txt
           CIBW_TEST_COMMAND: >
-            cmd /V /C "BLOSC_TRACE=1 python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif /tmp/MI04_020751.b2nd"
+            cmd /V /C "set BTUNE_TRACE=1 && python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif /tmp/MI04_020751.b2nd"
 
       - name: Build wheels (Linux / Mac OSX x86_64)
         if: ${{ matrix.os != 'windows-latest'}}
@@ -81,7 +81,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.14.1
         env:
           # The build requirements should be installed by the pyproject.toml specs
-          CIBW_ENVIRONMENT: DONT_BUILD_EXAMPLES=1
+          CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=arm64 DONT_BUILD_EXAMPLES=1
           CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
           CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
           CIBW_ARCHS_MACOS: "arm64"
