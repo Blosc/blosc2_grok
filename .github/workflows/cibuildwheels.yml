@@ -76,15 +76,15 @@ jobs:
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
 
-      - name: Build wheels (Mac OSX arm64)
-        if: ${{ matrix.os != 'windows-latest' && runner.os != 'Linux' }}
-        uses: pypa/cibuildwheel@v2.14.1
-        env:
-          # The build requirements should be installed by the pyproject.toml specs
-          CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=arm64 DONT_BUILD_EXAMPLES=1
-          CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
-          CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
-          CIBW_ARCHS_MACOS: "arm64"
+#      - name: Build wheels (Mac OSX arm64)
+#        if: ${{ matrix.os != 'windows-latest' && runner.os != 'Linux' }}
+#        uses: pypa/cibuildwheel@v2.14.1
+#        env:
+#          # The build requirements should be installed by the pyproject.toml specs
+#          CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=arm64 DONT_BUILD_EXAMPLES=1
+#          CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
+#          CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
+#          CIBW_ARCHS_MACOS: "arm64"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
