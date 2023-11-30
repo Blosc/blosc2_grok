@@ -1,0 +1,109 @@
+name: Python wheels
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - main
+
+
+jobs:
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }} (${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [x86_64]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Set up QEMU
+        if: ${{ matrix.arch == 'aarch64' }}
+        uses: docker/setup-qemu-action@v2
+
+      - name: Install Ninja
+        id: ninja
+        uses: turtlesec-no/get-ninja@main
+
+      - name: Install MSVC amd64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
+
+      - name: Update Clang
+        if: ${{ matrix.os == 'macos-latest' && matrix.arch == 'arm64' }}
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.0.app/Contents/Developer
+          clang -v
+
+      - name: Build wheels (Windows)
+        if: runner.os == 'Windows'
+        uses: pypa/cibuildwheel@v2.14.1
+        env:
+          CIBW_BUILD: 'cp38-win_amd64 cp39-win_amd64 cp310-win_amd64 cp311-win_amd64'
+          CIBW_BEFORE_TEST: python -m pip install --upgrade pip && python -m pip install -r requirements-test.txt
+          CIBW_TEST_COMMAND: >
+            cmd /V /C "set BLOSC_TRACE=1 && python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif"
+
+      - name: Build wheels (Linux / Mac OSX x86_64)
+        if: ${{ matrix.os != 'windows-latest'}}
+        uses: pypa/cibuildwheel@v2.14.1
+        env:
+          # The build requirements should be installed by the pyproject.toml specs
+          #CIBW_BEFORE_BUILD: python -m pip install --upgrade pip && python -m pip install -r requirements-build.txt
+          CIBW_BEFORE_BUILD_MACOS: CMAKE_OSX_ARCHITECTURES=x86_64
+          CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
+          CIBW_BEFORE_TEST: python -m pip install --upgrade pip && python -m pip install -r requirements-test.txt
+          CIBW_TEST_COMMAND: >
+            BLOSC_TRACE=1 python {project}/examples/roundtrip.py {project}/examples/MI04_020751.tif
+          CIBW_ARCHS_LINUX: ${{ matrix.arch }}
+          CIBW_ARCHS_MACOS: "x86_64"
+
+#      - name: Build wheels (Mac OSX arm64)
+#        if: ${{ matrix.os != 'windows-latest' && runner.os != 'Linux' }}
+#        uses: pypa/cibuildwheel@v2.14.1
+#        env:
+#          # The build requirements should be installed by the pyproject.toml specs
+#          CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=arm64 DONT_BUILD_EXAMPLES=1
+#          CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
+#          CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
+#          CIBW_ARCHS_MACOS: "arm64"
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
+
+
+  upload_pypi:
+    needs: [ build_wheels ]  # last but not least
+    runs-on: ubuntu-latest
+    # Only upload wheels when tagging (typically a release)
+    if: startsWith(github.event.ref, 'refs/tags')
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: dist
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.blosc_pypi_secret }}

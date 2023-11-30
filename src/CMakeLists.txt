@@ -7,19 +7,29 @@
 set(GRK_BUILD_LIBPNG OFF)
 set(GRK_BUILD_JPEG OFF)
 set(GRK_BUILD_CORE_EXAMPLES OFF)
-if (UNIX AND NOT APPLE)
-    # For some reason, Linux is not happy with the below flags
-    set(GRK_BUILD_LIBTIFF OFF)
-    set(GRK_BUILD_LCMS2 OFF)
+
+# Needed in the continuous integration
+if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
+    if("$ENV{CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
+        set(GRK_BUILD_LIBTIFF ON)
+        set(GRK_BUILD_LIBPNG ON)
+        set(GRK_BUILD_JPEG ON)
+        set(GRK_BUILD_LCMS2 ON)
+    endif()
 endif()
 
+# Avoid adding unneeded files to the wheel
+set(GRK_BUILD_PKGCONFIG_FILES OFF)
+set(GRK_BUILD_CODEC OFF)
+
 # Build statically
-#set(BUILD_SHARED_LIBS OFF)
-#set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(BUILD_SHARED_LIBS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if (APPLE)
     # Apple Rosetta cannot emulate AVX due to Intel patents
     set(ENABLE_AVX2 OFF)
 endif()
+set(CMAKE_FIND_FRAMEWORK NEVER)
 add_subdirectory(grok)
 
 # Build libblosc2_grok.so
@@ -47,9 +57,17 @@ endif (UNIX AND NOT APPLE)
 install(TARGETS blosc2_grok LIBRARY DESTINATION blosc2_grok)
 
 # Test program
-add_executable(test_grok test_grok.cpp blosc2_grok.cpp)
-if(MSVC OR MINGW)
-   target_link_libraries(test_grok blosc2 grokj2k)
+if(NOT DEFINED ENV{DONT_BUILD_EXAMPLES})
+    message(STATUS "DONT_BUILD_EXAMPLES not set-> Building examples")
+    add_executable(test_grok test_grok.cpp blosc2_grok.cpp utils.cpp)
+    add_executable(roundtrip roundtrip.cpp blosc2_grok.cpp utils.cpp)
+    if(MSVC OR MINGW)
+        target_link_libraries(test_grok blosc2 grokj2k)
+        target_link_libraries(roundtrip blosc2 grokj2k)
+    else()
+        target_link_libraries(test_grok blosc2 grokj2k m)
+        target_link_libraries(roundtrip blosc2 grokj2k m)
+    endif()
 else()
-   target_link_libraries(test_grok blosc2 grokj2k m)
+    message(STATUS "DONT_BUILD_EXAMPLES set")
 endif()
