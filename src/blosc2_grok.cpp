@@ -43,12 +43,14 @@ int blosc2_grok_encoder(
     free(content);
     free(dtype);
 
-    const uint32_t numComps = blockshape[0];
-    const uint32_t dimX = blockshape[1];
-    const uint32_t dimY = blockshape[2];
+    const uint32_t dimX = blockshape[0];
+    const uint32_t dimY = blockshape[1];
     const uint32_t typesize = ((blosc2_schunk*)cparams->schunk)->typesize;
     const uint32_t precision = 8 * typesize;
-    // const uint32_t precision = 8 * typesize - 7;
+    uint32_t numComps = 1;
+    if (ndim == 3) {
+        numComps = blockshape[2];
+    }
 
     // initialize compress parameters
     grk_codec* codec = nullptr;
@@ -82,8 +84,15 @@ int blosc2_grok_encoder(
         c->prec = precision;
         c->sgnd = false;
     }
-    grk_image* image = grk_image_new(
-        numComps, components, GRK_CLRSPC_GRAY, true);
+    grk_image* image;
+    if (numComps == 1) {
+        image = grk_image_new(
+            numComps, components, GRK_CLRSPC_GRAY, true);
+
+    } else {
+        image = grk_image_new(
+            numComps, components, GRK_CLRSPC_SRGB, true);
+    }
 
     // fill in component data
     // see grok.h header for full details of image structure
@@ -144,11 +153,15 @@ beach:
     return size;
 }
 
+int beach_decoder(grk_codec * codec, int rc) {
+    // cleanup
+    grk_object_unref(codec);
+    return rc;
+}
+
 // Decompress a block
 int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output, int32_t output_len,
                         uint8_t meta, blosc2_dparams *dparams, const void *chunk) {
-    int size = -1;
-
     // initialize decompress parameters
     grk_decompress_parameters decompressParams;
     grk_decompress_set_default_params(&decompressParams);
@@ -166,7 +179,7 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
     codec = grk_decompress_init(&streamParams, &decompressParams.core);
     if (!codec) {
         fprintf(stderr, "Failed to set up decompressor\n");
-        goto beach;
+        return beach_decoder(codec, BLOSC2_ERROR_FAILURE);
     }
 
     // read j2k header
@@ -174,21 +187,23 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
     memset(&headerInfo, 0, sizeof(headerInfo));
     if (!grk_decompress_read_header(codec, &headerInfo)) {
         fprintf(stderr, "Failed to read the header\n");
-        goto beach;
+        return beach_decoder(codec, BLOSC2_ERROR_FAILURE);
     }
 
     // retrieve image that will store uncompressed image data
     image = grk_decompress_get_composited_image(codec);
     if (!image) {
         fprintf(stderr, "Failed to retrieve image \n");
-        goto beach;
+        return beach_decoder(codec, BLOSC2_ERROR_FAILURE);
     }
 
     // decompress all tiles
     if (!grk_decompress(codec, nullptr))
-        goto beach;
+        return beach_decoder(codec, BLOSC2_ERROR_FAILURE);
 
     // see grok.h header for full details of image structure
+    memset(output, 0, output_len);
+    auto copyPtr = output;
     for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
         auto comp = image->comps + compno;
         auto compWidth = comp->w;
@@ -196,14 +211,11 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
         auto compData = comp->data;
         if (!compData) {
             fprintf(stderr, "Image has null data for component %d\n", compno);
-            goto beach;
+            return beach_decoder(codec, BLOSC2_ERROR_FAILURE);
         }
         // copy data, taking component stride into account
         int itemsize =  (comp->prec / 8);
         // int itemsize =  ((comp->prec + 7) / 8);
-
-        memset(output, 0, output_len);
-        auto copyPtr = output;
         for (uint32_t j = 0; j < compHeight; ++j) {
             auto compData = comp->data + comp->stride * j;
             for (uint32_t i = 0; i < compWidth; ++i) {
@@ -214,12 +226,7 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
         }
     }
 
-    size = output_len;
-beach:
-    // cleanup
-    grk_object_unref(codec);
-
-    return size;
+    return output_len;
 }
 
 void blosc2_grok_init(uint32_t nthreads, bool verbose) {

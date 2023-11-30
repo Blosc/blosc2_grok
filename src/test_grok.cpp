@@ -26,10 +26,10 @@ int comp_decomp() {
     const uint32_t dimX = 640;
     const uint32_t dimY = 480;
     const uint16_t numComps = 1;
-    int8_t ndim = 3;
-    int64_t shape[] = {numComps, dimX, dimY};
-    int32_t chunkshape[] = {numComps, (int32_t) dimX, (int32_t) dimY};
-    int32_t blockshape[] = {numComps, (int32_t) dimX, (int32_t) dimY};
+    int8_t ndim = 2;
+    int64_t shape[] = {dimX, dimY};
+    int32_t chunkshape[] = {(int32_t) dimX, (int32_t) dimY};
+    int32_t blockshape[] = {(int32_t) dimX, (int32_t) dimY};
     uint8_t itemsize = 2;
 
     // initialize compress parameters

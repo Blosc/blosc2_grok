@@ -17,14 +17,8 @@ def compress(im, urlpath=None, **kwargs):
     """
     # Convert the image to a numpy array
     np_array = np.asarray(im)
-    # Add new axis corresponding to numcomps
-    np_array = np_array[np.newaxis, ...]
-    # np_array = np_array.astype(dtype=np.uint16)
-    # print(np_array.dtype)
 
-    # Make the array C-contiguous
-    np_array = np_array.copy()
-
+    # Register codec locally for now
     blosc2.register_codec('grok', 160)
 
     # Set the parameters that will be used by the codec
