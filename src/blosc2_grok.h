@@ -30,21 +30,20 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose);
 void blosc2_grok_destroy();
 
 void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_width, int t_height,
-                                   int numlayers, bool allocationByRateDistoration,
-                                   double *layer_rate, bool allocationByQuality, double *layer_distortion,
-                                   int csty, int numgbits, GRK_PROG_ORDER prog_order,
-                                   int numpocs,
-                                   int numresolution, int cblockw_init, int cblockh_init, int cblk_sty,
-                                   bool irreversible, int roi_compno, int roi_shift, int res_spec,
-                                   int image_offset_x0, int image_offset_y0, int subsampling_dx,
-                                   int subsampling_dy, GRK_SUPPORTED_FILE_FMT decod_format,
-                                   GRK_SUPPORTED_FILE_FMT cod_format, bool enableTilePartGeneration,
-                                   int newTilePartProgressionDivider, int mct, int max_cs_size,
-                                   int max_comp_size, int rsiz, int framerate,
-                                   bool apply_icc_,
-                                   GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int numThreads, int deviceId,
-                                   int duration, int kernelBuildOptions, int repeats, bool writePLT,
-                                   bool writeTLM, bool verbose, bool sharedMemoryInterface);
+                                    int numlayers, char *quality_mode, double *quality_layers,
+                                    int csty, int numgbits, GRK_PROG_ORDER prog_order,
+                                    int numpocs,
+                                    int numresolution, int cblockw_init, int cblockh_init, int cblk_sty,
+                                    bool irreversible, int roi_compno, int roi_shift, int res_spec,
+                                    int image_offset_x0, int image_offset_y0, int subsampling_dx,
+                                    int subsampling_dy, GRK_SUPPORTED_FILE_FMT decod_format,
+                                    GRK_SUPPORTED_FILE_FMT cod_format, bool enableTilePartGeneration,
+                                    int newTilePartProgressionDivider, int mct, int max_cs_size,
+                                    int max_comp_size, int rsiz, int framerate,
+                                    bool apply_icc_,
+                                    GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int numThreads, int deviceId,
+                                    int duration, int kernelBuildOptions, int repeats, bool writePLT,
+                                    bool writeTLM, bool verbose, bool sharedMemoryInterface);
 
 
 #ifdef __cplusplus

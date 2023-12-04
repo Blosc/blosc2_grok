@@ -43,14 +43,19 @@ int blosc2_grok_encoder(
     free(content);
     free(dtype);
 
-    const uint32_t dimX = blockshape[0];
-    const uint32_t dimY = blockshape[1];
-    const uint32_t typesize = ((blosc2_schunk*)cparams->schunk)->typesize;
-    const uint32_t precision = 8 * typesize;
+    uint32_t dimX = blockshape[0];
+    uint32_t dimY = blockshape[1];
     uint32_t numComps = 1;
     if (ndim == 3) {
-        numComps = blockshape[2];
+        numComps = blockshape[0];
+        dimX = blockshape[1];
+        dimY = blockshape[2];
+
     }
+    const uint32_t typesize = ((blosc2_schunk*)cparams->schunk)->typesize;
+    const uint32_t precision = 8 * typesize;
+    // const uint32_t precision = 8 * typesize - 7;
+
 
     // initialize compress parameters
     grk_codec* codec = nullptr;
@@ -198,8 +203,10 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
     }
 
     // decompress all tiles
-    if (!grk_decompress(codec, nullptr))
+    if (!grk_decompress(codec, nullptr)){
+        fprintf(stderr, "Error when decompressing image\n");
         return beach_decoder(codec, BLOSC2_ERROR_FAILURE);
+    }
 
     // see grok.h header for full details of image structure
     memset(output, 0, output_len);
@@ -237,8 +244,7 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
 }
 
 void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_width, int t_height,
-                                   int numlayers, bool allocationByRateDistoration,
-                                   double *layer_rate, bool allocationByQuality, double *layer_distortion,
+                                   int numlayers, char *quality_mode, double *quality_layers,
                                    int csty, int numgbits, GRK_PROG_ORDER prog_order,
                                    int numpocs,
                                    int numresolution, int cblockw_init, int cblockh_init, int cblk_sty,
@@ -259,13 +265,20 @@ void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_w
     GRK_CPARAMETERS_DEFAULTS.t_height = t_height;
 
     GRK_CPARAMETERS_DEFAULTS.numlayers = numlayers;
-    GRK_CPARAMETERS_DEFAULTS.allocationByRateDistoration = allocationByRateDistoration;
-
-    for (int i = 0; i < numlayers; ++i) {
-        GRK_CPARAMETERS_DEFAULTS.layer_rate[i] = layer_rate[i];
-        GRK_CPARAMETERS_DEFAULTS.layer_distortion[i] = layer_distortion[i];
+    if (quality_mode != nullptr) {
+        if (strcmp(quality_mode, "rates") == 0) {
+            GRK_CPARAMETERS_DEFAULTS.allocationByRateDistoration = true;
+            for (int i = 0; i < numlayers; ++i) {
+                GRK_CPARAMETERS_DEFAULTS.layer_rate[i] = quality_layers[i];
+            }
+        } else if (strcmp(quality_mode, "dB") == 0) {
+            GRK_CPARAMETERS_DEFAULTS.allocationByQuality = true;
+            for (int i = 0; i < numlayers; ++i) {
+                GRK_CPARAMETERS_DEFAULTS.layer_distortion[i] = quality_layers[i];
+            }
+        }
     }
-    GRK_CPARAMETERS_DEFAULTS.allocationByQuality = allocationByQuality;
+
     /*for (int i = 0; i < GRK_NUM_COMMENTS_SUPPORTED; ++i) {
         GRK_CPARAMETERS_DEFAULTS.comment[i] = comment[i]; // malloc & memcpy
         GRK_CPARAMETERS_DEFAULTS.comment_len[i] = comment_len[i];

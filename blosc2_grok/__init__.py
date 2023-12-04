@@ -130,11 +130,9 @@ params_defaults = {
     'ty0': 0,
     't_width': 0,
     't_height': 0,
-    'numlayers': 0,
-    'allocationByRateDistoration': False,
-    'layer_rate': np.zeros(0, dtype=np.float64),  # compression_ratios grok cmd param
-    'allocationByQuality': False,
-    'layer_distortion': np.zeros(0, dtype=np.float64),  # quality grok cmd param
+    # 'numlayers': 0, # blosc2_grok C func set_params will still receive this param
+    'quality_mode': None,
+    'quality_layers': np.zeros(0, dtype=np.float64),
     'csty': 0,
     'numgbits': 2,
     'prog_order': GrkProgOrder.LRCP,
@@ -143,7 +141,7 @@ params_defaults = {
     'cblockw_init': 64,
     'cblockh_init': 64,
     'cblk_sty': 0,
-    'irreversible': False,
+    # 'irreversible': False, # blosc2_grok C func set_params will still receive this param
     'roi_compno': -1,
     'roi_shift': 0,
     'res_spec': 0,
@@ -185,15 +183,22 @@ def set_params_defaults(**kwargs):
     params.update(kwargs)
     args = params.values()
     args = list(args)
+    if args[5] is not None:
+        args[5] = args[5].encode('utf-8')
+        # Get number of layers
+        args.insert(5, args[6].shape[0])
+    else:
+        args.insert(5, 0)
 
-    args[12] = args[12].value
-    args[26] = args[26].value
-    args[27] = args[27].value
-    args[33] = args[33].value
-    args[36] = args[36].value
+    args.insert(16, False)  # irreversible param is deactivated for now
 
-    lib.blosc2_grok_set_default_params.argtypes = ([ctypes.c_bool] + [ctypes.c_int] * 5 + [ctypes.c_bool] +
-                                                   [np.ctypeslib.ndpointer(dtype=np.float64)] + [ctypes.c_bool] +
+    args[10] = args[10].value
+    args[24] = args[24].value
+    args[25] = args[25].value
+    args[31] = args[31].value
+    args[34] = args[34].value
+
+    lib.blosc2_grok_set_default_params.argtypes = ([ctypes.c_bool] + [ctypes.c_int] * 5 + [ctypes.c_char_p] +
                                                    [np.ctypeslib.ndpointer(dtype=np.float64)] +
                                                    [ctypes.c_int] * 8 + [ctypes.c_bool] + [ctypes.c_int] * 9 +
                                                    [ctypes.c_bool] + [ctypes.c_int] * 6 + [ctypes.c_bool] +
