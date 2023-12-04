@@ -61,7 +61,7 @@ if __name__ == '__main__':
     )
     add_argument = parser.add_argument
     add_argument('inputfile')
-    add_argument('--outputfile', type=str, help='File name from decompressed image')
+    add_argument('-o', '--outputfile', type=str, help='File name from decompressed image')
     args = parser.parse_args()
 
     kwargs = {'cod_format': blosc2_grok.GrkFileFmt.GRK_FMT_JP2,
@@ -90,6 +90,7 @@ if __name__ == '__main__':
         if arr.ndim == 3:
             arr = arr.transpose([1, 2, 0])
             arr = arr.copy()
+        im = Image.fromarray(arr)
         im.save(args.outputfile)
 
     # print("Performing dB compression ...")
