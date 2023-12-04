@@ -37,7 +37,7 @@ Tagging
 
     $ git push --tags
 
-- Create a new release visiting https://github.com/Blosc/blosc2_btune/releases/new
+- Create a new release visiting https://github.com/Blosc/blosc2_grok/releases/new
   and add the release notes copying them from `RELEASE_NOTES.md` document.
 
 
@@ -59,7 +59,7 @@ Announcing
 Post-release actions
 --------------------
 
-- Edit *VERSION* symbols in blosc2_btune/__init__.py *and* src/btune.h *and* pyproject.toml in main to increment the
+- Edit *VERSION* symbols in blosc2_btune/__init__.py *and* pyproject.toml in main to increment the
   version to the next minor one (i.e. X.Y.Z --> X.Y.(Z+1).dev).
 
 - Create new headers for adding new features in ``RELEASE_NOTES.md``
