@@ -17,6 +17,9 @@ def compress(im, urlpath=None, **kwargs):
     """
     # Convert the image to a numpy array
     np_array = np.asarray(im)
+    if np_array.ndim == 3:
+        np_array = np.transpose(np_array, [2, 0, 1])
+        np_array = np_array.copy()
 
     # Register codec locally for now
     blosc2.register_codec('grok', 160)
