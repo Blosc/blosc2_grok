@@ -37,6 +37,7 @@ Decompress OK
 #include "blosc2_grok.h"
 #include "grok.h"
 #include "utils.h"
+#include "blosc2_grok_public.h"
 
 int comp_decomp() {
     const char *filename = "/Users/martaiborra/blosc2_grok/examples/MI04_020751.ppm";
@@ -79,8 +80,8 @@ int comp_decomp() {
     grok_codec.compcode = 160;
     grok_codec.complib = 1;
     grok_codec.version = 0;
-    grok_codec.encoder = NULL;
-    grok_codec.decoder = NULL;
+    grok_codec.encoder = &blosc2_grok_encoder;
+    grok_codec.decoder = &blosc2_grok_decoder;
     int rc = blosc2_register_codec(&grok_codec);
     if (rc < 0) {
         printf("Error registering codec\n");

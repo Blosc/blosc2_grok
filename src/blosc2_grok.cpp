@@ -240,7 +240,7 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     // initialize library
     grk_initialize(nullptr, nthreads, verbose);
     // initialize grok defaults
-    grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
+    // grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
 }
 
 void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_width, int t_height,

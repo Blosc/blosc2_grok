@@ -8,26 +8,26 @@ Copyright (C) 2023  The Blosc Developers <blosc@blosc.org>
                           Test program demonstrating use of the Blosc filter from C code.
                       Compile this program with cmake and run:
 
-    $ ./test_grok2
-    image size width 256, height 256
-        Compress OK:	cratio: 2.891 x
-                      Going to decompress
-                      Decompressing buffer
+$ ./test_grok2
+image size width 256, height 256
+Compress OK:	cratio: 2.891 x
+Going to decompress
+Decompressing buffer
 
-                      Image Info
-                      Width: 256
-                      Height: 256
-                      Number of components: 3
-                      Precision of component 0 : 8
-                      Precision of component 1 : 8
-                      Precision of component 2 : 8
-                      Number of tiles: 1
-                      Component 0 : dimensions (256,256) at precision 8
-                                    Component 1 : dimensions (256,256) at precision 8
-                                                  Component 2 : dimensions (256,256) at precision 8
-                                                                Decompress OK
+Image Info
+Width: 256
+Height: 256
+Number of components: 3
+Precision of component 0 : 8
+Precision of component 1 : 8
+Precision of component 2 : 8
+Number of tiles: 1
+Component 0 : dimensions (256,256) at precision 8
+Component 1 : dimensions (256,256) at precision 8
+Component 2 : dimensions (256,256) at precision 8
+Decompress OK
 
-                                                                    **********************************************************************/
+**********************************************************************/
 
 #include <cmath>
 #include <cstdio>
@@ -35,10 +35,11 @@ Copyright (C) 2023  The Blosc Developers <blosc@blosc.org>
 #include "b2nd.h"
 #include "blosc2.h"
 #include "blosc2_grok.h"
+#include "blosc2_grok_public.h"
 #include "grok.h"
 #include "utils.h"
 
-                                                                int comp_decomp(bool reg) {
+int comp_decomp(bool reg) {
     const char *filename = "/Users/martaiborra/blosc2_grok/examples/kodim23.ppm";
     const char *outFile = "/Users/martaiborra/blosc2_grok/src/test.jp2";
     uint64_t compressedLength = 0;
@@ -86,8 +87,8 @@ Copyright (C) 2023  The Blosc Developers <blosc@blosc.org>
         grok_codec.compcode = 160;
         grok_codec.complib = 1;
         grok_codec.version = 0;
-        grok_codec.encoder = NULL;
-        grok_codec.decoder = NULL;
+        grok_codec.encoder = &blosc2_grok_encoder;
+        grok_codec.decoder = &blosc2_grok_decoder;
         int rc = blosc2_register_codec(&grok_codec);
         if (rc < 0) {
             printf("Error registering codec\n");
@@ -162,14 +163,19 @@ int main(void) {
     // Initialization
     blosc2_init();
     blosc2_grok_init(0, true);
-
     int error = comp_decomp(true);
-    if (error == 0) {
-        printf("Try again\n");
-        error = comp_decomp(false);
-    }
-
     blosc2_grok_destroy();
     blosc2_destroy();
+
+
+    if (error == 0) {
+        printf("Try again\n");
+        blosc2_init();
+        blosc2_grok_init(0, true);
+        error = comp_decomp(true);
+        blosc2_grok_destroy();
+        blosc2_destroy();
+    }
+
     return error;
 }
