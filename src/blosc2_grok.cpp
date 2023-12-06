@@ -71,7 +71,15 @@ int blosc2_grok_encoder(
         compressParams = &codec_params->compressParams;
         streamParams = &codec_params->streamParams;
     }
-
+    /*printf("compressparams tile_size_on %d\n", compressParams->tile_size_on);
+    printf("compressparams csty %d\n", compressParams->csty);
+    printf("compressparams cblockw_init %d\n", compressParams->cblockw_init);
+    printf("compressparams cblockh_init %d\n", compressParams->cblockh_init);
+    printf("compressparams cblk_sty %d\n", compressParams->cblk_sty);
+    printf("compressparams res_spec %d\n", compressParams->res_spec);
+    printf("compressparams enableTilePartGeneration %d\n", compressParams->enableTilePartGeneration);
+    printf("compressparams newTilePartProgressionDivider %d\n", compressParams->newTilePartProgressionDivider);
+    printf("compressparams max_cs_size %llu\n", compressParams->max_cs_size);*/
     std::unique_ptr<uint8_t[]> data;
     size_t bufLen = (size_t)numComps * ((precision + 7) / 8) * dimX * dimY;
     data = std::make_unique<uint8_t[]>(bufLen);
@@ -137,7 +145,10 @@ int blosc2_grok_encoder(
     }
 
     // compress
+    printf("ab grk_compress\n");
     size = (int)grk_compress(codec, nullptr);
+    printf("dp grk_compress\n");
+
     if (size == 0) {
         size = -1;
         fprintf(stderr, "Failed to compress\n");

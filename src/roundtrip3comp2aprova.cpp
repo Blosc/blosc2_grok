@@ -125,6 +125,52 @@ int comp_decomp(bool reg) {
     printf("Compress OK:\t");
     printf("cratio: %.3f x\n", (float)arr->sc->nbytes / (float)arr->sc->cbytes);
 
+
+    printf("Create the same array again\n");
+    // initialize compress parameters
+    grk_cparameters compressParams2;
+    grk_compress_set_default_params(&compressParams2);
+    compressParams2.cod_format = GRK_FMT_JP2;
+    compressParams2.verbose = true;
+    // compressParams2.allocationByRateDistoration = true;
+    // compressParams2.layer_rate[0] = 5.0;
+    // compressParams2.numlayers = 1;
+    printf("dp compress set def params2\n");
+
+    grk_stream_params streamParams2;
+    grk_set_default_stream_params(&streamParams2);
+    printf("dp grk_set_default_stream_params2\n");
+
+    blosc2_cparams cparams2 = BLOSC2_CPARAMS_DEFAULTS;
+    cparams2.compcode = 160;
+    cparams2.typesize = itemsize;
+    for (int i = 0; i < BLOSC2_MAX_FILTERS; i++) {
+        cparams2.filters[i] = 0;
+    }
+
+    // Codec parameters
+    blosc2_grok_params codec_params2 = {0};
+    codec_params2.compressParams = compressParams2;
+    codec_params2.streamParams = streamParams2;
+    cparams2.codec_params = &codec_params2;
+
+    blosc2_dparams dparams2 = BLOSC2_DPARAMS_DEFAULTS;
+    dparams2.nthreads = 1;
+    blosc2_storage b2_storage2 = {.cparams = &cparams2, .dparams = &dparams2};
+
+    b2nd_context_t *ctx2 = b2nd_create_ctx(&b2_storage2, ndim, shape, chunkshape, blockshape, NULL, 0, NULL, 0);
+    printf("dp b2nd_create_ctx\n");
+    b2nd_array_t *arr2;
+    BLOSC_ERROR(b2nd_from_cbuffer(ctx2, &arr2, c_buffer, bufLen));
+    printf("dp b2nd_from_cbuffer\n");
+    if ((arr2->sc->nbytes <= 0) || (arr2->sc->nbytes > bufLen)) {
+        printf("Compression error\n");
+        return -1;
+    }
+    printf("Compress2 OK:\t");
+    printf("cratio2: %.3f x\n", (float)arr->sc->nbytes / (float)arr->sc->cbytes);
+
+
     // Decompress
     printf("Going to decompress\n");
     uint8_t *buffer;
@@ -150,10 +196,14 @@ int comp_decomp(bool reg) {
 
     printf("Decompress OK\n");
 
+
+
 beach:
     // cleanup
     BLOSC_ERROR(b2nd_free_ctx(ctx));
     BLOSC_ERROR(b2nd_free(arr));
+    BLOSC_ERROR(b2nd_free_ctx(ctx2));
+    BLOSC_ERROR(b2nd_free(arr2));
     free(buffer);
 
     return BLOSC2_ERROR_SUCCESS;
@@ -164,17 +214,6 @@ int main(void) {
     blosc2_init();
     blosc2_grok_init(0, true);
     int error = comp_decomp(true);
-    //blosc2_grok_destroy();
-    //blosc2_destroy();
-
-
-    if (error == 0) {
-        printf("Try again\n");
-        //blosc2_init();
-        //blosc2_grok_init(0, true);
-        error = comp_decomp(false);
-
-    }
     blosc2_grok_destroy();
     blosc2_destroy();
     return error;
