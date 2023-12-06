@@ -141,6 +141,7 @@ int comp_decomp() {
 
 beach:
     // cleanup
+    free(c_buffer);
     delete[] components;
     grk_object_unref(codec);
     grk_object_unref(&image->obj);
