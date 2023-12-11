@@ -18,10 +18,6 @@ def compress(im, urlpath=None, **kwargs):
     # Convert the image to a numpy array
     np_array = np.asarray(im)
 
-    if np_array.ndim == 3:
-        np_array = np.transpose(np_array, [2, 0, 1])
-        np_array = np_array.copy()
-
     # Set the parameters that will be used by the codec
     blosc2_grok.set_params_defaults(**kwargs)
 
@@ -87,9 +83,6 @@ if __name__ == '__main__':
     arr = compress(im, "rates.b2nd", **kwargs)
 
     if args.outputfile is not None:
-        if arr.ndim == 3:
-            arr = arr.transpose([1, 2, 0])
-            arr = arr.copy()
         im = Image.fromarray(arr)
         im.save(args.outputfile)
 

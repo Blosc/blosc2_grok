@@ -47,10 +47,7 @@ int blosc2_grok_encoder(
     uint32_t dimY = blockshape[1];
     uint32_t numComps = 1;
     if (ndim == 3) {
-        numComps = blockshape[0];
-        dimX = blockshape[1];
-        dimY = blockshape[2];
-
+        numComps = blockshape[2];
     }
     const uint32_t typesize = ((blosc2_schunk*)cparams->schunk)->typesize;
     const uint32_t precision = 8 * typesize;
@@ -102,7 +99,9 @@ int blosc2_grok_encoder(
     // fill in component data
     // see grok.h header for full details of image structure
     auto *ptr = (uint8_t*)input;
+    uint64_t index = 0;
     for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
+        index = compno;
         auto comp = image->comps + compno;
         auto compWidth = comp->w;
         auto compHeight = comp->h;
@@ -116,8 +115,8 @@ int blosc2_grok_encoder(
         memset(srcData, 0, compWidth * compHeight * sizeof(int32_t));
         for (uint32_t j = 0; j < compHeight; ++j) {
             for (uint32_t i = 0; i < compWidth; ++i) {
-                memcpy(srcData + j * compWidth + i, ptr, typesize);
-                ptr += typesize;
+                memcpy(srcData + j * compWidth + i, &ptr[index * typesize], typesize);
+                index += numComps;
             }
         }
 
@@ -212,7 +211,9 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
     // see grok.h header for full details of image structure
     memset(output, 0, output_len);
     auto copyPtr = output;
+    uint64_t index = 0;
     for (uint16_t compno = 0; compno < image->numcomps; ++compno) {
+        index = compno;
         auto comp = image->comps + compno;
         auto compWidth = comp->w;
         auto compHeight = comp->h;
@@ -227,9 +228,9 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
         for (uint32_t j = 0; j < compHeight; ++j) {
             auto compData = comp->data + comp->stride * j;
             for (uint32_t i = 0; i < compWidth; ++i) {
-                memcpy(copyPtr, compData, itemsize);
-                copyPtr += itemsize;
+                memcpy(&copyPtr[index * itemsize], compData, itemsize);
                 compData += 1;
+                index += image->numcomps;
             }
         }
     }
