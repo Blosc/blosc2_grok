@@ -93,7 +93,7 @@ if __name__ == '__main__':
         im = Image.fromarray(arr)
         im.save(args.outputfile)
 
-    # print("Performing dB compression ...")
-    # kwargs['quality_mode'] = "dB"
-    # kwargs['quality_layers'] = np.array([5], dtype=np.float64)
-    # compress(im, "dB.b2nd", **kwargs)
+    print("Performing dB compression ...")
+    kwargs['quality_mode'] = "dB"
+    kwargs['quality_layers'] = np.array([5], dtype=np.float64)
+    compress(im, "dB.b2nd", **kwargs)

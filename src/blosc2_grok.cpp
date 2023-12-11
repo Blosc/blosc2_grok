@@ -113,6 +113,7 @@ int blosc2_grok_encoder(
         }
         // fill in component data, taking component stride into account
         auto srcData = new int32_t[compWidth * compHeight];
+        memset(srcData, 0, compWidth * compHeight * sizeof(int32_t));
         for (uint32_t j = 0; j < compHeight; ++j) {
             for (uint32_t i = 0; i < compWidth; ++i) {
                 memcpy(srcData + j * compWidth + i, ptr, typesize);
