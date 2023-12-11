@@ -17,22 +17,6 @@ import numpy as np
 __version__ = "0.0.2.dev"
 
 
-class GrkProgOrder(Enum):
-    """
-    Available grok progression orders.
-    `L` : layer
-    `R` : resolution
-    `C` : component
-    `P` : precinct
-    """
-
-    LRCP = 0
-    RLCP = 1
-    RPCL = 2
-    PCRL = 3
-    CPRL = 4
-
-
 class GrkFileFmt(Enum):
     """
     Supported file formats in grok.
@@ -125,28 +109,24 @@ def destroy():
 
 # TODO: change these for real defaults
 params_defaults = {
-    'tile_size_on': False,
-    'tx0': 0,
-    'ty0': 0,
-    't_width': 0,
-    't_height': 0,
+    'tile_size': (0, 0),
+    'tile_offset': (0, 0),
     # 'numlayers': 0, # blosc2_grok C func set_params will still receive this param
     'quality_mode': None,
     'quality_layers': np.zeros(0, dtype=np.float64),
     'csty': 0,
     'numgbits': 2,
-    'prog_order': GrkProgOrder.LRCP,
-    'numpocs': 0,
-    'numresolution': 6,
-    'cblockw_init': 64,
-    'cblockh_init': 64,
-    'cblk_sty': 0,
+    'progression': "LRCP",
+    'num_resolutions': 6,
+    'codeblock_size': (64, 64),
+    'codeblock_style': 0,
     # 'irreversible': False, # blosc2_grok C func set_params will still receive this param
     'roi_compno': -1,
     'roi_shift': 0,
     'res_spec': 0,
-    'image_offset_x0': 0,
-    'image_offset_y0': 0,
+    'prcw_init': np.zeros(0, dtype=np.int_),
+    'prch_init': np.zeros(0, dtype=np.int_),
+    'offset': (0, 0),
     'subsampling_dx': 1,
     'subsampling_dy': 1,
     'decod_format': GrkFileFmt.GRK_FMT_UNK,
@@ -183,10 +163,10 @@ def set_params_defaults(**kwargs):
     params.update(kwargs)
     args = params.values()
     args = list(args)
-    if args[5] is not None:
-        args[5] = args[5].encode('utf-8')
+    if args[2] is not None:
+        args[2] = args[2].encode('utf-8')
         # Get number of layers
-        args.insert(5, args[6].shape[0])
+        args.insert(2, args[3].shape[0])
     else:
         args.insert(5, 0)
 
