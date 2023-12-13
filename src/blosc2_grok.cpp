@@ -273,6 +273,9 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
     GRK_CPARAMETERS_DEFAULTS.t_height = tile_size[1];
 
     GRK_CPARAMETERS_DEFAULTS.numlayers = numlayers;
+    // Restore default values
+    GRK_CPARAMETERS_DEFAULTS.allocationByRateDistoration = false;
+    GRK_CPARAMETERS_DEFAULTS.allocationByQuality = false;
     if (quality_mode != nullptr) {
         if (strcmp(quality_mode, "rates") == 0) {
             GRK_CPARAMETERS_DEFAULTS.allocationByRateDistoration = true;
@@ -312,7 +315,9 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
         // GRK_CPARAMETERS_DEFAULTS.progression[i] = progression[i];
     // }
     if (precinct_size[0] != 0 && precinct_size[1] != 0) {
-        GRK_CPARAMETERS_DEFAULTS.res_spec = 1;
+        GRK_CPARAMETERS_DEFAULTS.res_spec = 1; // grok can support more than one, but PIL not.
+    } else {
+        GRK_CPARAMETERS_DEFAULTS.res_spec = 0;
     }
     GRK_CPARAMETERS_DEFAULTS.prcw_init[0] = precinct_size[0];
     GRK_CPARAMETERS_DEFAULTS.prch_init[0] = precinct_size[1];

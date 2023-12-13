@@ -146,8 +146,8 @@ params_defaults = {
     'duration': 0,
     'kernelBuildOptions': 0,
     'repeats': 1,
-    'writePLT': False,
-    'writeTLM': False,
+    'plt': False,
+    'tlm': False,
     'verbose': False,
     'sharedMemoryInterface': False,
 }
