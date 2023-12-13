@@ -1,9 +1,9 @@
 /*********************************************************************
-    Blosc - Blocked Shuffling and Compression Library
-
-    Copyright (c) 2021  The Blosc Development Team <blosc@blosc.org>
-    https://blosc.org
-    License: GNU Affero General Public License v3.0 (see LICENSE.txt)
+ * blosc2_grok: Grok (JPEG2000 codec) plugin for Blosc2
+ *
+ * Copyright (c) 2023  The Blosc Development Team <blosc@blosc.org>
+ * https://blosc.org
+ * License: GNU Affero General Public License v3.0 (see LICENSE.txt)
 **********************************************************************/
 
 #include <memory>
@@ -154,6 +154,9 @@ beach:
     delete[] components;
     grk_object_unref(codec);
     grk_object_unref(&image->obj);
+    if (codec_params == NULL) {
+        free(streamParams);
+    }
 
     return size;
 }
@@ -245,28 +248,34 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
 }
 
-void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_width, int t_height,
-                                   int numlayers, char *quality_mode, double *quality_layers,
-                                   int csty, int numgbits, GRK_PROG_ORDER prog_order,
-                                   int numpocs,
-                                   int numresolution, int cblockw_init, int cblockh_init, int cblk_sty,
-                                   bool irreversible, int roi_compno, int roi_shift, int res_spec,
-                                   int image_offset_x0, int image_offset_y0, int subsampling_dx,
-                                   int subsampling_dy, GRK_SUPPORTED_FILE_FMT decod_format,
-                                   GRK_SUPPORTED_FILE_FMT cod_format, bool enableTilePartGeneration,
-                                   int newTilePartProgressionDivider, int mct, int max_cs_size,
-                                   int max_comp_size, int rsiz, int framerate,
-                                   bool apply_icc_,
-                                   GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int numThreads, int deviceId,
-                                   int duration, int kernelBuildOptions, int repeats, bool writePLT,
-                                   bool writeTLM, bool verbose, bool sharedMemoryInterface) {
-    GRK_CPARAMETERS_DEFAULTS.tile_size_on = tile_size_on;
-    GRK_CPARAMETERS_DEFAULTS.tx0 = tx0;
-    GRK_CPARAMETERS_DEFAULTS.ty0 = ty0;
-    GRK_CPARAMETERS_DEFAULTS.t_width = t_width;
-    GRK_CPARAMETERS_DEFAULTS.t_height = t_height;
+void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *tile_offset,
+                                    int numlayers, char *quality_mode, double *quality_layers,
+                                    int csty, int numgbits, char *progression,
+                                    int num_resolutions, int64_t *codeblock_size, int codeblock_style,
+                                    bool irreversible, int roi_compno, int roi_shift, const int64_t *precinct_size,
+                                    const int64_t *offset, int subsampling_dx,
+                                    int subsampling_dy, GRK_SUPPORTED_FILE_FMT decod_format,
+                                    GRK_SUPPORTED_FILE_FMT cod_format, bool enableTilePartGeneration,
+                                    int newTilePartProgressionDivider, int mct, int max_cs_size,
+                                    int max_comp_size, int rsiz, int framerate,
+                                    bool apply_icc_,
+                                    GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int numThreads, int deviceId,
+                                    int duration, int kernelBuildOptions, int repeats, bool writePLT,
+                                    bool writeTLM, bool verbose, bool sharedMemoryInterface) {
+    if (tile_size[0] == 0 && tile_size[1] == 0) {
+        GRK_CPARAMETERS_DEFAULTS.tile_size_on = false;
+    } else {
+        GRK_CPARAMETERS_DEFAULTS.tile_size_on = true;
+    }
+    GRK_CPARAMETERS_DEFAULTS.tx0 = tile_offset[0];
+    GRK_CPARAMETERS_DEFAULTS.ty0 = tile_offset[1];
+    GRK_CPARAMETERS_DEFAULTS.t_width = tile_size[0];
+    GRK_CPARAMETERS_DEFAULTS.t_height = tile_size[1];
 
     GRK_CPARAMETERS_DEFAULTS.numlayers = numlayers;
+    // Restore default values
+    GRK_CPARAMETERS_DEFAULTS.allocationByRateDistoration = false;
+    GRK_CPARAMETERS_DEFAULTS.allocationByQuality = false;
     if (quality_mode != nullptr) {
         if (strcmp(quality_mode, "rates") == 0) {
             GRK_CPARAMETERS_DEFAULTS.allocationByRateDistoration = true;
@@ -290,26 +299,43 @@ void blosc2_grok_set_default_params(bool tile_size_on, int tx0, int ty0, int t_w
 
     GRK_CPARAMETERS_DEFAULTS.csty = csty;
     GRK_CPARAMETERS_DEFAULTS.numgbits = numgbits;
-    GRK_CPARAMETERS_DEFAULTS.prog_order = prog_order;
-    /*for (int i = 0; i < GRK_J2K_MAXRLVLS; ++i) {
-        GRK_CPARAMETERS_DEFAULTS.progression[i] = progression[i];
-        GRK_CPARAMETERS_DEFAULTS.prcw_init[i] = prcw_init[i];
-        GRK_CPARAMETERS_DEFAULTS.prch_init[i] = prch_init[i];
-    }*/
-    GRK_CPARAMETERS_DEFAULTS.numpocs = numpocs;
-    GRK_CPARAMETERS_DEFAULTS.numresolution = numresolution;
+    if (strcmp(progression, "LRCP") == 0) {
+        GRK_CPARAMETERS_DEFAULTS.prog_order = GRK_LRCP;
+    } else if (strcmp(progression, "RLCP") == 0) {
+        GRK_CPARAMETERS_DEFAULTS.prog_order = GRK_RLCP;
+    } else if (strcmp(progression, "RPCL") == 0) {
+        GRK_CPARAMETERS_DEFAULTS.prog_order = GRK_RPCL;
+    } else if (strcmp(progression, "PCRL") == 0) {
+        GRK_CPARAMETERS_DEFAULTS.prog_order = GRK_PCRL;
+    } else if (strcmp(progression, "CPRL") == 0) {
+        GRK_CPARAMETERS_DEFAULTS.prog_order = GRK_CPRL;
+    }
 
-    GRK_CPARAMETERS_DEFAULTS.cblockw_init = cblockw_init;
-    GRK_CPARAMETERS_DEFAULTS.cblockh_init = cblockh_init;
+    //for (int i = 0; i < res_spec; ++i) {
+        // GRK_CPARAMETERS_DEFAULTS.progression[i] = progression[i];
+    // }
+    if (precinct_size[0] != 0 && precinct_size[1] != 0) {
+        GRK_CPARAMETERS_DEFAULTS.res_spec = 1; // grok can support more than one, but PIL not.
+    } else {
+        GRK_CPARAMETERS_DEFAULTS.res_spec = 0;
+    }
+    GRK_CPARAMETERS_DEFAULTS.prcw_init[0] = precinct_size[0];
+    GRK_CPARAMETERS_DEFAULTS.prch_init[0] = precinct_size[1];
+    // GRK_CPARAMETERS_DEFAULTS.numpocs = numpocs; only one prog supported
+    GRK_CPARAMETERS_DEFAULTS.numresolution = num_resolutions;
+
+    GRK_CPARAMETERS_DEFAULTS.cblockw_init = codeblock_size[0];
+    GRK_CPARAMETERS_DEFAULTS.cblockh_init = codeblock_size[1];
+
+
     GRK_CPARAMETERS_DEFAULTS.irreversible = irreversible;
     GRK_CPARAMETERS_DEFAULTS.roi_compno = roi_compno;
     GRK_CPARAMETERS_DEFAULTS.roi_shift = roi_shift;
-    GRK_CPARAMETERS_DEFAULTS.res_spec = res_spec;
 
-    GRK_CPARAMETERS_DEFAULTS.cblk_sty = cblk_sty;
+    GRK_CPARAMETERS_DEFAULTS.cblk_sty = codeblock_style;
 
-    GRK_CPARAMETERS_DEFAULTS.image_offset_x0 = image_offset_x0;
-    GRK_CPARAMETERS_DEFAULTS.image_offset_y0 = image_offset_y0;
+    GRK_CPARAMETERS_DEFAULTS.image_offset_x0 = offset[0];
+    GRK_CPARAMETERS_DEFAULTS.image_offset_y0 = offset[1];
     GRK_CPARAMETERS_DEFAULTS.subsampling_dx = subsampling_dx;
     GRK_CPARAMETERS_DEFAULTS.subsampling_dy = subsampling_dy;
 

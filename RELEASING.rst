@@ -59,7 +59,7 @@ Announcing
 Post-release actions
 --------------------
 
-- Edit *VERSION* symbols in blosc2_btune/__init__.py *and* pyproject.toml in main to increment the
+- Edit *VERSION* symbols in blosc2_grok/__init__.py *and* pyproject.toml in main to increment the
   version to the next minor one (i.e. X.Y.Z --> X.Y.(Z+1).dev).
 
 - Create new headers for adding new features in ``RELEASE_NOTES.md``
@@ -73,10 +73,3 @@ Post-release actions
   $ git push
 
 That's all folks!
-
-
-.. Local Variables:
-.. mode: rst
-.. coding: utf-8
-.. fill-column: 70
-.. End:

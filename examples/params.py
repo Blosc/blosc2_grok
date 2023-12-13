@@ -1,7 +1,14 @@
+##############################################################################
+# blosc2_grok: Grok (JPEG2000 codec) plugin for Blosc2
+#
+# Copyright (c) 2023  The Blosc Development Team <blosc@blosc.org>
+# https://blosc.org
+# License: GNU Affero General Public License v3.0 (see LICENSE.txt)
+##############################################################################
+
 import blosc2
 import blosc2_grok
 import argparse
-from pathlib import Path
 import numpy as np
 from PIL import Image
 

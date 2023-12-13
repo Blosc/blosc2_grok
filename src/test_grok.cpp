@@ -1,16 +1,17 @@
 /*********************************************************************
-    Blosc - Blocked Shuffling and Compression Library
+ * blosc2_grok: Grok (JPEG2000 codec) plugin for Blosc2
+ *
+ * Copyright (c) 2023  The Blosc Development Team <blosc@blosc.org>
+ * https://blosc.org
+ * License: GNU Affero General Public License v3.0 (see LICENSE.txt)
 
-    Copyright (C) 2023  The Blosc Developers <blosc@blosc.org>
-    https://blosc.org
-    License: GNU Affero General Public License v3.0 (see LICENSE.txt)
+Test program demonstrating use of the Blosc filter from C code.
 
-    Test program demonstrating use of the Blosc filter from C code.
-    Compile this program with cmake and run:
-
-    $ ./test_grok
-    Compress    OK
-    Decompress  OK
+Compile this program with cmake and run:
+$ ./test_grok
+Compress    OK
+Decompress  OK
+Successful image roundtrip!
 
 **********************************************************************/
 

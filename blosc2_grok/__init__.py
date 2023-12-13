@@ -1,10 +1,10 @@
-# Blosc - Blocked Shuffling and Compression Library
+##############################################################################
+# blosc2_grok: Grok (JPEG2000 codec) plugin for Blosc2
 #
-# Copyright (C) 2023  The Blosc Developers <blosc@blosc.org>
+# Copyright (c) 2023  The Blosc Development Team <blosc@blosc.org>
 # https://blosc.org
-# License: BSD 3-Clause (see LICENSE.txt)
-#
-# See LICENSE.txt for details about copyright and rights to use.
+# License: GNU Affero General Public License v3.0 (see LICENSE.txt)
+##############################################################################
 
 import ctypes
 import os
@@ -15,22 +15,6 @@ import atexit
 import numpy as np
 
 __version__ = "0.0.2.dev"
-
-
-class GrkProgOrder(Enum):
-    """
-    Available grok progression orders.
-    `L` : layer
-    `R` : resolution
-    `C` : component
-    `P` : precinct
-    """
-
-    LRCP = 0
-    RLCP = 1
-    RPCL = 2
-    PCRL = 3
-    CPRL = 4
 
 
 class GrkFileFmt(Enum):
@@ -123,34 +107,30 @@ def destroy():
     lib.blosc2_grok_destroy()
 
 
-# TODO: change these for real defaults
+# TODO: change these by the actual defaults
 params_defaults = {
-    'tile_size_on': False,
-    'tx0': 0,
-    'ty0': 0,
-    't_width': 0,
-    't_height': 0,
+    'tile_size': (0, 0),
+    'tile_offset': (0, 0),
     # 'numlayers': 0, # blosc2_grok C func set_params will still receive this param
     'quality_mode': None,
     'quality_layers': np.zeros(0, dtype=np.float64),
     'csty': 0,
     'numgbits': 2,
-    'prog_order': GrkProgOrder.LRCP,
-    'numpocs': 0,
-    'numresolution': 6,
-    'cblockw_init': 64,
-    'cblockh_init': 64,
-    'cblk_sty': 0,
+    'progression': "LRCP",
+    'num_resolutions': 6,
+    'codeblock_size': (64, 64),
+    # 10 - 19
+    'codeblock_style': 0,
     # 'irreversible': False, # blosc2_grok C func set_params will still receive this param
     'roi_compno': -1,
     'roi_shift': 0,
-    'res_spec': 0,
-    'image_offset_x0': 0,
-    'image_offset_y0': 0,
+    'precinct_size': (0, 0),
+    'offset': (0, 0),
     'subsampling_dx': 1,
     'subsampling_dy': 1,
     'decod_format': GrkFileFmt.GRK_FMT_UNK,
     'cod_format': GrkFileFmt.GRK_FMT_UNK,
+    # 20 - 29
     'enableTilePartGeneration': False,
     'newTilePartProgressionDivider': 0,
     'mct': 0,
@@ -159,14 +139,15 @@ params_defaults = {
     'rsiz': GrkProfile.GRK_PROFILE_NONE,
     'framerate': 0,
     'apply_icc_': False,
-    'rateControlAlgorithm': GrkRateControl.PCRD_OPT,
+    'rateControlAlgorithm': GrkRateControl.BISECT,
     'numThreads': 0,
+    # 30 - 37
     'deviceId': 0,
     'duration': 0,
     'kernelBuildOptions': 0,
     'repeats': 1,
-    'writePLT': False,
-    'writeTLM': False,
+    'plt': False,
+    'tlm': False,
     'verbose': False,
     'sharedMemoryInterface': False,
 }
@@ -183,25 +164,39 @@ def set_params_defaults(**kwargs):
     params.update(kwargs)
     args = params.values()
     args = list(args)
-    if args[5] is not None:
-        args[5] = args[5].encode('utf-8')
-        # Get number of layers
-        args.insert(5, args[6].shape[0])
-    else:
-        args.insert(5, 0)
 
-    args.insert(16, False)  # irreversible param is deactivated for now
+    # Get number of layers
+    args.insert(2, 0)
+    if args[3] is not None:
+        args[3] = args[3].encode('utf-8')
+        args[2] = args[4].shape[0]
 
-    args[10] = args[10].value
-    args[24] = args[24].value
+    args.insert(11, False)  # irreversible param is deactivated for now
+
+    args[7] = args[7].encode('utf-8')
+
+    # Convert tuples to desired NumPy arrays
+    args[0] = np.array(args[0], dtype=np.int64)
+    args[1] = np.array(args[1], dtype=np.int64)
+    args[9] = np.array(args[9], dtype=np.int64)
+    args[14] = np.array(args[14], dtype=np.int64)
+    args[15] = np.array(args[15], dtype=np.int64)
+
+    # Get value of enumerate
+    args[18] = args[18].value
+    args[19] = args[19].value
     args[25] = args[25].value
-    args[31] = args[31].value
-    args[34] = args[34].value
+    args[28] = args[28].value
 
-    lib.blosc2_grok_set_default_params.argtypes = ([ctypes.c_bool] + [ctypes.c_int] * 5 + [ctypes.c_char_p] +
-                                                   [np.ctypeslib.ndpointer(dtype=np.float64)] +
-                                                   [ctypes.c_int] * 8 + [ctypes.c_bool] + [ctypes.c_int] * 9 +
-                                                   [ctypes.c_bool] + [ctypes.c_int] * 6 + [ctypes.c_bool] +
+    lib.blosc2_grok_set_default_params.argtypes = ([np.ctypeslib.ndpointer(dtype=np.int64)] * 2 +
+                                                   [ctypes.c_int] + [ctypes.c_char_p] + [np.ctypeslib.ndpointer(dtype=np.float64)] +
+                                                   [ctypes.c_int] * 2 + [ctypes.c_char_p] +
+                                                   [ctypes.c_int] + [np.ctypeslib.ndpointer(dtype=np.int64)] + [ctypes.c_int] +
+                                                   [ctypes.c_bool] + [ctypes.c_int] * 2 + [np.ctypeslib.ndpointer(dtype=np.int64)] +
+                                                   [np.ctypeslib.ndpointer(dtype=np.int64)] + [ctypes.c_int] +
+                                                   [ctypes.c_int] * 2 +
+                                                   [ctypes.c_int] + [ctypes.c_bool] +
+                                                   [ctypes.c_int] * 6 + [ctypes.c_bool] +
                                                    [ctypes.c_int] * 6 + [ctypes.c_bool] * 4)
     lib.blosc2_grok_set_default_params(*args)
 
