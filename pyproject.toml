@@ -18,17 +18,21 @@ readme = "README.md"
 authors = [
     {name = "Blosc Development Team", email = "contact@blosc.org"},
 ]
-description = "Grok plugin for Blosc2. jpeg2000 for grayscale."
+description = "Grok (JPEG2000 codec) plugin for Blosc2."
 keywords = ["plugin", "blosc2"]
 license = {text = "GNU Affero General Public License version 3"}
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: C",
     "Programming Language :: C++",
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Image Processing",
     "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: System :: Archiving :: Compression",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: Unix",
 ]
@@ -36,6 +40,15 @@ dependencies = [
     # python-blosc2 is not a strict runtime dependency, but it is handy
     "blosc2"
 ]
+
+[project.optional-dependencies]
+h5py-test = [
+    "pytest",  # to run tests
+]
+
+[project.urls]
+Homepage = "https://github.com/Blosc/blosc2_grok"
+Issues = "https://github.com/Blosc/blosc2_grok/issues"
 
 [tool.setuptools]
 platforms = [ "any" ]
