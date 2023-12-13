@@ -1,9 +1,9 @@
 /*********************************************************************
-    Blosc - Blocked Shuffling and Compression Library
-
-    Copyright (c) 2021  The Blosc Development Team <blosc@blosc.org>
-    https://blosc.org
-    License: GNU Affero General Public License v3.0 (see LICENSE.txt)
+ * blosc2_grok: Grok (JPEG2000 codec) plugin for Blosc2
+ *
+ * Copyright (c) 2023  The Blosc Development Team <blosc@blosc.org>
+ * https://blosc.org
+ * License: GNU Affero General Public License v3.0 (see LICENSE.txt)
 **********************************************************************/
 
 #include <memory>

@@ -1,10 +1,10 @@
-# Blosc - Blocked Shuffling and Compression Library
+##############################################################################
+# blosc2_grok: Grok (JPEG2000 codec) plugin for Blosc2
 #
-# Copyright (C) 2023  The Blosc Developers <blosc@blosc.org>
+# Copyright (c) 2023  The Blosc Development Team <blosc@blosc.org>
 # https://blosc.org
-# License: BSD 3-Clause (see LICENSE.txt)
-#
-# See LICENSE.txt for details about copyright and rights to use.
+# License: GNU Affero General Public License v3.0 (see LICENSE.txt)
+##############################################################################
 
 import ctypes
 import os
@@ -107,7 +107,7 @@ def destroy():
     lib.blosc2_grok_destroy()
 
 
-# TODO: change these for real defaults
+# TODO: change these by the actual defaults
 params_defaults = {
     'tile_size': (0, 0),
     'tile_offset': (0, 0),

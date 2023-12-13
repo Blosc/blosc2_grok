@@ -1,10 +1,10 @@
-#######################################################################
-# Copyright (c) 2019-present, Blosc Development Team <blosc@blosc.org>
-# All rights reserved.
+##############################################################################
+# blosc2_grok: Grok (JPEG2000 codec) plugin for Blosc2
 #
-# This source code is licensed under a BSD-style license (found in the
-# LICENSE file in the root directory of this source tree)
-#######################################################################
+# Copyright (c) 2023  The Blosc Development Team <blosc@blosc.org>
+# https://blosc.org
+# License: GNU Affero General Public License v3.0 (see LICENSE.txt)
+##############################################################################
 
 import numpy as np
 import pytest

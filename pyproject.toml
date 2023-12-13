@@ -1,10 +1,9 @@
 ##############################################################################
-# Btune for Blosc2 - Automatically choose the best codec/filter for your data
+# blosc2_grok: Grok (JPEG2000 codec) plugin for Blosc2
 #
-# Copyright (c) 2023 The Blosc Developers <blosc@blosc.org>
-# https://btune.blosc.org
-# License: GNU Affero General Public License v3.0
-# See LICENSE.txt for details about copyright and rights to use.
+# Copyright (c) 2023  The Blosc Development Team <blosc@blosc.org>
+# https://blosc.org
+# License: GNU Affero General Public License v3.0 (see LICENSE.txt)
 ##############################################################################
 
 [build-system]

@@ -1,8 +1,10 @@
-# Blosc - Blocked Shuffling and Compression Library
+##############################################################################
+# blosc2_grok: Grok (JPEG2000 codec) plugin for Blosc2
 #
-# Copyright (C) 2023  The Blosc Developers <blosc@blosc.org>
+# Copyright (c) 2023  The Blosc Development Team <blosc@blosc.org>
 # https://blosc.org
 # License: GNU Affero General Public License v3.0 (see LICENSE.txt)
+##############################################################################
 
 set(GRK_BUILD_LIBPNG OFF)
 set(GRK_BUILD_JPEG OFF)
