@@ -139,7 +139,7 @@ params_defaults = {
     'rsiz': GrkProfile.GRK_PROFILE_NONE,
     'framerate': 0,
     'apply_icc_': False,
-    'rateControlAlgorithm': GrkRateControl.PCRD_OPT,
+    'rateControlAlgorithm': GrkRateControl.BISECT,
     'numThreads': 0,
     # 30 - 37
     'deviceId': 0,
