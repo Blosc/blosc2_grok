@@ -30,16 +30,16 @@ import blosc2_grok
         ({'enableTilePartGeneration': True}),
         ({'tile_size': (1009, 1000)}),
         ({'tile_size': (1009, 1000), 'enableTilePartGeneration': True}),
-        # ({'csty': 1}),
         ({'numgbits': 4}),
         ({'progression': 'RLCP'}),
         ({'progression': 'RPCL'}),
         ({'progression': 'PCRL'}),
         ({'progression': 'CPRL'}),
         ({'num_resolutions': 8}),
+        ({'irreversible': True}),
         ({'codeblock_size': (4, 4)}),
         ({'codeblock_size': (8, 64)}),
-        ({'codeblock_size': (256, 8), 'codeblock_style': 1}),
+        ({'codeblock_size': (256, 8)}),
         ({'roi_compno': 0}),
         ({'roi_compno': 1}),
         ({'roi_compno': 2}),
@@ -47,26 +47,22 @@ import blosc2_grok
         ({'roi_shift': 8}),
         ({'precinct_size': (32, 32)}),
         ({'precinct_size': (64, 64)}),
+        ({'precinct_size': (128, 128)}),
         ({'offset': (33, 40)}),
-        ({'subsampling_dx': 2, 'subsampling_dy': 2}),
-        ({'newTilePartProgressionDivider': 20}),
-        ({'newTilePartProgressionDivider': 4, 'enableTilePartGeneration': True}),
-        ({'newTilePartProgressionDivider': 1}),
-        ({'newTilePartProgressionDivider': 1, 'enableTilePartGeneration': True}),
         ({'mct': 1}),
+        ({'mct': 1, 'irreversible': True}),
         ({'max_cs_size': 256}),
         ({'max_cs_size': 256, 'quality_mode': 'rates', 'quality_layers': np.array([5], dtype=np.float64)}),
-        # ({'max_comp_size': 2}), # Don't really know why this fails
-        # ({'rsiz': 8}), # Don't know how to use this yet
+        ({'max_comp_size': 10**9}),
+        ({'rsiz': blosc2_grok.GrkProfile.GRK_PROFILE_0}),
+        ({'rsiz': blosc2_grok.GrkProfile.GRK_PROFILE_1}),
         # ({'framerate': 8}), # Would make sense if we had more than one frame
         ({'apply_icc_': True}),
-        ({'numThreads': 4}),
+        # ({'numThreads': 4}),  # Deactivated until we can actually use it
         # ({'deviceId': 8}),  # Meant for multi-GPU systems
         ({'duration': 1}),
-        # ({'kernelBuildOptions': 8}),  # NI
-        ({'repeats': 2}),  # NI
-        ({'plt': True}),  # TO-DO: check header
-        ({'tlm': True}),  # NI
+        ({'repeats': 2}),
+        ({'repeats': 0}),
         ({'sharedMemoryInterface': True}),
     ],
 )
@@ -92,7 +88,6 @@ def test_jp2(image, args):
 
     cparams = {
         'codec': 160,
-        # 'nthreads': nthreads,
         'filters': [],
         'splitmode': blosc2.SplitMode.NEVER_SPLIT,
     }
@@ -110,7 +105,7 @@ def test_jp2(image, args):
 
     print(bl_array.schunk.cratio)
     if kwargs.get('quality_mode', None) is None:
-        if kwargs.get('max_cs_size', None) is None:
+        if kwargs.get('max_cs_size', None) is None and not kwargs.get('irreversible', False):
             np.testing.assert_array_equal(bl_array[...], np_array)
     else:
         if kwargs['quality_mode'] == 'rates' and kwargs.get('max_cs_size', None) is None:

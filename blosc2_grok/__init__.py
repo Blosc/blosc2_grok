@@ -107,47 +107,37 @@ def destroy():
     lib.blosc2_grok_destroy()
 
 
-# TODO: change these by the actual defaults
 params_defaults = {
     'tile_size': (0, 0),
     'tile_offset': (0, 0),
     # 'numlayers': 0, # blosc2_grok C func set_params will still receive this param
     'quality_mode': None,
     'quality_layers': np.zeros(0, dtype=np.float64),
-    'csty': 0,
     'numgbits': 2,
     'progression': "LRCP",
     'num_resolutions': 6,
     'codeblock_size': (64, 64),
+    'irreversible': False,
     # 10 - 19
-    'codeblock_style': 0,
-    # 'irreversible': False, # blosc2_grok C func set_params will still receive this param
     'roi_compno': -1,
     'roi_shift': 0,
     'precinct_size': (0, 0),
     'offset': (0, 0),
-    'subsampling_dx': 1,
-    'subsampling_dy': 1,
     'decod_format': GrkFileFmt.GRK_FMT_UNK,
     'cod_format': GrkFileFmt.GRK_FMT_UNK,
-    # 20 - 29
     'enableTilePartGeneration': False,
-    'newTilePartProgressionDivider': 0,
     'mct': 0,
     'max_cs_size': 0,
     'max_comp_size': 0,
+    # 20 - 29
     'rsiz': GrkProfile.GRK_PROFILE_NONE,
     'framerate': 0,
     'apply_icc_': False,
     'rateControlAlgorithm': GrkRateControl.BISECT,
-    'numThreads': 0,
-    # 30 - 37
+    # 'numThreads': 0,  # C func will still receive this param
     'deviceId': 0,
     'duration': 0,
-    'kernelBuildOptions': 0,
     'repeats': 1,
-    'plt': False,
-    'tlm': False,
     'verbose': False,
     'sharedMemoryInterface': False,
 }
@@ -171,33 +161,34 @@ def set_params_defaults(**kwargs):
         args[3] = args[3].encode('utf-8')
         args[2] = args[4].shape[0]
 
-    args.insert(11, False)  # irreversible param is deactivated for now
+    args[6] = args[6].encode('utf-8')
 
-    args[7] = args[7].encode('utf-8')
+    # Insert numThreads
+    args.insert(24, 0)
 
     # Convert tuples to desired NumPy arrays
     args[0] = np.array(args[0], dtype=np.int64)
     args[1] = np.array(args[1], dtype=np.int64)
-    args[9] = np.array(args[9], dtype=np.int64)
-    args[14] = np.array(args[14], dtype=np.int64)
-    args[15] = np.array(args[15], dtype=np.int64)
+    args[8] = np.array(args[8], dtype=np.int64)
+    args[12] = np.array(args[2], dtype=np.int64)
+    args[13] = np.array(args[13], dtype=np.int64)
 
     # Get value of enumerate
-    args[18] = args[18].value
-    args[19] = args[19].value
-    args[25] = args[25].value
-    args[28] = args[28].value
+    args[14] = args[14].value
+    args[15] = args[15].value
+    args[20] = args[20].value
+    args[23] = args[23].value
 
     lib.blosc2_grok_set_default_params.argtypes = ([np.ctypeslib.ndpointer(dtype=np.int64)] * 2 +
                                                    [ctypes.c_int] + [ctypes.c_char_p] + [np.ctypeslib.ndpointer(dtype=np.float64)] +
-                                                   [ctypes.c_int] * 2 + [ctypes.c_char_p] +
-                                                   [ctypes.c_int] + [np.ctypeslib.ndpointer(dtype=np.int64)] + [ctypes.c_int] +
+                                                   [ctypes.c_int] + [ctypes.c_char_p] +
+                                                   [ctypes.c_int] + [np.ctypeslib.ndpointer(dtype=np.int64)] +
                                                    [ctypes.c_bool] + [ctypes.c_int] * 2 + [np.ctypeslib.ndpointer(dtype=np.int64)] +
-                                                   [np.ctypeslib.ndpointer(dtype=np.int64)] + [ctypes.c_int] +
-                                                   [ctypes.c_int] * 2 +
+                                                   [np.ctypeslib.ndpointer(dtype=np.int64)] +
+                                                   [ctypes.c_int] +
                                                    [ctypes.c_int] + [ctypes.c_bool] +
-                                                   [ctypes.c_int] * 6 + [ctypes.c_bool] +
-                                                   [ctypes.c_int] * 6 + [ctypes.c_bool] * 4)
+                                                   [ctypes.c_int] * 5 + [ctypes.c_bool] +
+                                                   [ctypes.c_int] * 5 + [ctypes.c_bool] * 2)
     lib.blosc2_grok_set_default_params(*args)
 
 

@@ -250,18 +250,18 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
 
 void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *tile_offset,
                                     int numlayers, char *quality_mode, double *quality_layers,
-                                    int csty, int numgbits, char *progression,
-                                    int num_resolutions, int64_t *codeblock_size, int codeblock_style,
+                                    int numgbits, char *progression,
+                                    int num_resolutions, int64_t *codeblock_size,
                                     bool irreversible, int roi_compno, int roi_shift, const int64_t *precinct_size,
-                                    const int64_t *offset, int subsampling_dx,
-                                    int subsampling_dy, GRK_SUPPORTED_FILE_FMT decod_format,
+                                    const int64_t *offset,
+                                    GRK_SUPPORTED_FILE_FMT decod_format,
                                     GRK_SUPPORTED_FILE_FMT cod_format, bool enableTilePartGeneration,
-                                    int newTilePartProgressionDivider, int mct, int max_cs_size,
+                                    int mct, int max_cs_size,
                                     int max_comp_size, int rsiz, int framerate,
                                     bool apply_icc_,
                                     GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int numThreads, int deviceId,
-                                    int duration, int kernelBuildOptions, int repeats, bool writePLT,
-                                    bool writeTLM, bool verbose, bool sharedMemoryInterface) {
+                                    int duration, int repeats,
+                                    bool verbose, bool sharedMemoryInterface) {
     if (tile_size[0] == 0 && tile_size[1] == 0) {
         GRK_CPARAMETERS_DEFAULTS.tile_size_on = false;
     } else {
@@ -297,7 +297,7 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
     }
     GRK_CPARAMETERS_DEFAULTS.num_comments = num_comments;*/
 
-    GRK_CPARAMETERS_DEFAULTS.csty = csty;
+    // GRK_CPARAMETERS_DEFAULTS.csty = csty;
     GRK_CPARAMETERS_DEFAULTS.numgbits = numgbits;
     if (strcmp(progression, "LRCP") == 0) {
         GRK_CPARAMETERS_DEFAULTS.prog_order = GRK_LRCP;
@@ -332,18 +332,18 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
     GRK_CPARAMETERS_DEFAULTS.roi_compno = roi_compno;
     GRK_CPARAMETERS_DEFAULTS.roi_shift = roi_shift;
 
-    GRK_CPARAMETERS_DEFAULTS.cblk_sty = codeblock_style;
+    // GRK_CPARAMETERS_DEFAULTS.cblk_sty = codeblock_style;
 
     GRK_CPARAMETERS_DEFAULTS.image_offset_x0 = offset[0];
     GRK_CPARAMETERS_DEFAULTS.image_offset_y0 = offset[1];
-    GRK_CPARAMETERS_DEFAULTS.subsampling_dx = subsampling_dx;
-    GRK_CPARAMETERS_DEFAULTS.subsampling_dy = subsampling_dy;
+    // GRK_CPARAMETERS_DEFAULTS.subsampling_dx = subsampling_dx;
+    // GRK_CPARAMETERS_DEFAULTS.subsampling_dy = subsampling_dy;
 
     GRK_CPARAMETERS_DEFAULTS.decod_format = decod_format;
     GRK_CPARAMETERS_DEFAULTS.cod_format = cod_format;
     // GRK_CPARAMETERS_DEFAULTS.raw_cp = raw_cp;
     GRK_CPARAMETERS_DEFAULTS.enableTilePartGeneration = enableTilePartGeneration;
-    GRK_CPARAMETERS_DEFAULTS.newTilePartProgressionDivider = newTilePartProgressionDivider;
+    // GRK_CPARAMETERS_DEFAULTS.newTilePartProgressionDivider = newTilePartProgressionDivider;
     GRK_CPARAMETERS_DEFAULTS.mct = mct;
 
     // GRK_CPARAMETERS_DEFAULTS.mct_data = mct_data;
@@ -367,10 +367,10 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
     GRK_CPARAMETERS_DEFAULTS.deviceId = deviceId;
 
     GRK_CPARAMETERS_DEFAULTS.duration = duration;
-    GRK_CPARAMETERS_DEFAULTS.kernelBuildOptions = kernelBuildOptions;
+    // GRK_CPARAMETERS_DEFAULTS.kernelBuildOptions = kernelBuildOptions;
     GRK_CPARAMETERS_DEFAULTS.repeats = repeats;
-    GRK_CPARAMETERS_DEFAULTS.writePLT = writePLT;
-    GRK_CPARAMETERS_DEFAULTS.writeTLM = writeTLM;
+    // GRK_CPARAMETERS_DEFAULTS.writePLT = writePLT;
+    // GRK_CPARAMETERS_DEFAULTS.writeTLM = writeTLM;
 
     GRK_CPARAMETERS_DEFAULTS.verbose = verbose;
     GRK_CPARAMETERS_DEFAULTS.sharedMemoryInterface = sharedMemoryInterface;

@@ -31,18 +31,18 @@ void blosc2_grok_destroy();
 
 void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *tile_offset,
                                     int numlayers, char *quality_mode, double *quality_layers,
-                                    int csty, int numgbits, char *progression,
-                                    int num_resolutions, int64_t *codeblock_size, int codeblock_style,
+                                    int numgbits, char *progression,
+                                    int num_resolutions, int64_t *codeblock_size,
                                     bool irreversible, int roi_compno, int roi_shift, const int64_t *precinct_size,
-                                    const int64_t *offset, int subsampling_dx,
-                                    int subsampling_dy, GRK_SUPPORTED_FILE_FMT decod_format,
+                                    const int64_t *offset,
+                                    GRK_SUPPORTED_FILE_FMT decod_format,
                                     GRK_SUPPORTED_FILE_FMT cod_format, bool enableTilePartGeneration,
-                                    int newTilePartProgressionDivider, int mct, int max_cs_size,
+                                    int mct, int max_cs_size,
                                     int max_comp_size, int rsiz, int framerate,
                                     bool apply_icc_,
                                     GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int numThreads, int deviceId,
-                                    int duration, int kernelBuildOptions, int repeats, bool writePLT,
-                                    bool writeTLM, bool verbose, bool sharedMemoryInterface);
+                                    int duration, int repeats,
+                                    bool verbose, bool sharedMemoryInterface);
 
 
 #ifdef __cplusplus
