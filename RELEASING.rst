@@ -50,6 +50,15 @@ Tagging
 
     $ git push --delete origin vX.Y.Z
 
+- After the CI uploads wheels in PyPI, do a manual wheel for the Apple ARM64 architecture::
+
+    $ python -m cibuildwheel --only 'cp312-macosx_arm64'
+
+  and upload it to PyPI::
+
+    $ python -m twine upload wheelhouse/blosc2_grok-X.Y.Z-py3-none-macosx_11_0_arm64.whl
+
+  (note that you will need to have a PyPI account and be a maintainer of the blosc2_grok project there).
 
 - Create a new release visiting https://github.com/Blosc/blosc2_grok/releases/new
   and add the release notes copying them from `RELEASE_NOTES.md` document.
