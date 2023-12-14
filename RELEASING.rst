@@ -22,8 +22,13 @@ Testing
 Follow the steps in README-DEVELOPERS.md file for locally creating and
 installing the wheel, then test it::
 
+  $ python -m pytest
+
+Also::
+
   $ cd examples
   $ python roundtrip.py MI04_020751.tif
+  $ cd ..
 
 
 Tagging
@@ -36,6 +41,15 @@ Tagging
 - Push the tag to the github repo::
 
     $ git push --tags
+
+- If you happen to have to delete the tag, such as artifacts demonstrates a fault, first delete it locally::
+
+    $ git tag --delete vX.Y.Z
+
+  and then remotely on Github::
+
+    $ git push --delete origin vX.Y.Z
+
 
 - Create a new release visiting https://github.com/Blosc/blosc2_grok/releases/new
   and add the release notes copying them from `RELEASE_NOTES.md` document.
