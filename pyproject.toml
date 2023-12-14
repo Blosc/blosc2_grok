@@ -12,7 +12,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "blosc2_grok"
-version = "0.0.2.dev"
+version = "0.1.0.dev"
 readme = "README.md"
 authors = [
     {name = "Blosc Development Team", email = "contact@blosc.org"},
