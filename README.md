@@ -63,30 +63,30 @@ The following parameters are available for compression for grok, with its defaul
     'tile_offset': (0, 0),
     'quality_mode': None,
     'quality_layers': np.zeros(0, dtype=np.float64),
-    * 'numgbits': 2,  # Equivalent to -N, -guard_bits
     'progression': "LRCP",
     'num_resolutions': 6,
     'codeblock_size': (64, 64),
-    'irreversible':
-    * 'roi_compno': -1,  # Together with 'roi_shift' it is equivalent to -R, -ROI
-    * 'roi_shift': 0,
+    'irreversible': False,
     'precinct_size': (0, 0),
     'offset': (0, 0),
+    'mct': 0,
+    * 'numgbits': 2,  # Equivalent to -N, -guard_bits
+    * 'roi_compno': -1,  # Together with 'roi_shift' it is equivalent to -R, -ROI
+    * 'roi_shift': 0,
     * 'decod_format': GrkFileFmt.GRK_FMT_UNK,
     * 'cod_format': GrkFileFmt.GRK_FMT_UNK,
-    * 'enableTilePartGeneration': False,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
-    'mct': 0,
-    * 'max_cs_size': 0,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
-    * 'max_comp_size': 0,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
     * 'rsiz': GrkProfile.GRK_PROFILE_NONE,  # Equivalent to -Z, -rsiz
     * 'framerate': 0,
     * 'apply_icc_': False,  # Equivalent to -f, -apply_icc
     * 'rateControlAlgorithm': GrkRateControl.BISECT,
+    * 'num_threads': 0,
     * 'deviceId': 0,  # Equivalent to -G, -device_id
     * 'duration': 0,  # Equivalent to -J, -duration
     * 'repeats': 1,  # Equivalent to -e, -repetitions
     * 'verbose': False,
-    * 'sharedMemoryInterface': False,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
+    * 'enableTilePartGeneration': False,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
+    * 'max_cs_size': 0,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
+    * 'max_comp_size': 0,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
 
 ## More examples
 

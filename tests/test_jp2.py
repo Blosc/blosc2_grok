@@ -56,14 +56,14 @@ import blosc2_grok
         ({'max_comp_size': 10**9}),
         ({'rsiz': blosc2_grok.GrkProfile.GRK_PROFILE_0}),
         ({'rsiz': blosc2_grok.GrkProfile.GRK_PROFILE_1}),
-        # ({'framerate': 8}), # Would make sense if we had more than one frame
+        # # ({'framerate': 8}), # Would make sense if we had more than one frame
         ({'apply_icc_': True}),
-        # ({'numThreads': 4}),  # Deactivated until we can actually use it
+        ({'num_threads': 4}),
+        ({'num_threads': 1}),
         # ({'deviceId': 8}),  # Meant for multi-GPU systems
         ({'duration': 1}),
         ({'repeats': 2}),
         ({'repeats': 0}),
-        ({'sharedMemoryInterface': True}),
     ],
 )
 def test_jp2(image, args):
@@ -102,6 +102,18 @@ def test_jp2(image, args):
     stop = time.time()
     if kwargs.get('duration', 0) > 0:
         assert stop - start < kwargs['duration']
+    if kwargs.get('num_threads', 0) == 1:
+        kwargs['num_threads'] = 0
+        blosc2_grok.set_params_defaults(**kwargs)
+        start2 = time.time()
+        _ = blosc2.asarray(
+            np_array,
+            chunks=np_array.shape,
+            blocks=np_array.shape,
+            cparams=cparams,
+        )
+        stop2 = time.time()
+        assert stop2 - start2 < stop - start
 
     print(bl_array.schunk.cratio)
     if kwargs.get('quality_mode', None) is None:

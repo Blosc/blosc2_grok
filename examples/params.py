@@ -11,6 +11,7 @@ import blosc2_grok
 import argparse
 import numpy as np
 from PIL import Image
+import time
 
 
 def compress(im, urlpath=None, **kwargs):
@@ -39,6 +40,7 @@ def compress(im, urlpath=None, **kwargs):
 
     # Transform the numpy array to a blosc2 array. This is where compression happens, and
     # the HTJ2K codec is called.
+    start = time.time()
     bl_array = blosc2.asarray(
         np_array,
         chunks=np_array.shape,
@@ -47,6 +49,8 @@ def compress(im, urlpath=None, **kwargs):
         urlpath=urlpath,
         mode="w",
     )
+    stop = time.time()
+    print("Time for compressing: ", stop - start)
     # Print information about the array, see the compression ratio (cratio)
     print(bl_array.info)
 
@@ -81,7 +85,12 @@ if __name__ == '__main__':
     # Register codec locally for now
     blosc2.register_codec('grok', 160)
 
-    print("Performing lossless compression ...")
+    print("Performing lossless compression with 1 thread ...")
+    kwargs['num_threads'] = 1
+    _ = compress(im, "lossless.b2nd", **kwargs)
+
+    print("Performing lossless compression with default threads ...")
+    kwargs['num_threads'] = 0
     _ = compress(im, "lossless.b2nd", **kwargs)
 
     print("Performing rates compression ...")

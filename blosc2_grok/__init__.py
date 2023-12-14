@@ -129,17 +129,16 @@ params_defaults = {
     'mct': 0,
     'max_cs_size': 0,
     'max_comp_size': 0,
-    # 20 - 29
+    # 20 - 28
     'rsiz': GrkProfile.GRK_PROFILE_NONE,
     'framerate': 0,
     'apply_icc_': False,
     'rateControlAlgorithm': GrkRateControl.BISECT,
-    # 'numThreads': 0,  # C func will still receive this param
+    'num_threads': 0,
     'deviceId': 0,
     'duration': 0,
     'repeats': 1,
     'verbose': False,
-    'sharedMemoryInterface': False,
 }
 
 
@@ -163,9 +162,6 @@ def set_params_defaults(**kwargs):
 
     args[6] = args[6].encode('utf-8')
 
-    # Insert numThreads
-    args.insert(24, 0)
-
     # Convert tuples to desired NumPy arrays
     args[0] = np.array(args[0], dtype=np.int64)
     args[1] = np.array(args[1], dtype=np.int64)
@@ -188,7 +184,7 @@ def set_params_defaults(**kwargs):
                                                    [ctypes.c_int] +
                                                    [ctypes.c_int] + [ctypes.c_bool] +
                                                    [ctypes.c_int] * 5 + [ctypes.c_bool] +
-                                                   [ctypes.c_int] * 5 + [ctypes.c_bool] * 2)
+                                                   [ctypes.c_int] * 5 + [ctypes.c_bool])
     lib.blosc2_grok_set_default_params(*args)
 
 

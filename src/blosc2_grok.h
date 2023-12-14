@@ -40,9 +40,9 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
                                     int mct, int max_cs_size,
                                     int max_comp_size, int rsiz, int framerate,
                                     bool apply_icc_,
-                                    GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int numThreads, int deviceId,
+                                    GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int num_threads, int deviceId,
                                     int duration, int repeats,
-                                    bool verbose, bool sharedMemoryInterface);
+                                    bool verbose);
 
 
 #ifdef __cplusplus

@@ -46,9 +46,16 @@ int blosc2_grok_encoder(
     uint32_t dimX = blockshape[0];
     uint32_t dimY = blockshape[1];
     uint32_t numComps = 1;
-    if (ndim == 3) {
+    if (dimX == 1) {
+        // Array formed by different images
+        dimX = blockshape[1];
+        dimY = blockshape[2];
+    }
+    else if (ndim == 3) {
+        // Single image with more than 1 component
         numComps = blockshape[2];
     }
+
     const uint32_t typesize = ((blosc2_schunk*)cparams->schunk)->typesize;
     const uint32_t precision = 8 * typesize;
     // const uint32_t precision = 8 * typesize - 7;
@@ -259,9 +266,9 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
                                     int mct, int max_cs_size,
                                     int max_comp_size, int rsiz, int framerate,
                                     bool apply_icc_,
-                                    GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int numThreads, int deviceId,
+                                    GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int num_threads, int deviceId,
                                     int duration, int repeats,
-                                    bool verbose, bool sharedMemoryInterface) {
+                                    bool verbose) {
     if (tile_size[0] == 0 && tile_size[1] == 0) {
         GRK_CPARAMETERS_DEFAULTS.tile_size_on = false;
     } else {
@@ -363,7 +370,7 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
     GRK_CPARAMETERS_DEFAULTS.write_display_resolution = write_display_resolution;*/
     GRK_CPARAMETERS_DEFAULTS.apply_icc_ = apply_icc_;
     GRK_CPARAMETERS_DEFAULTS.rateControlAlgorithm = rateControlAlgorithm;
-    GRK_CPARAMETERS_DEFAULTS.numThreads = numThreads;
+    GRK_CPARAMETERS_DEFAULTS.numThreads = num_threads;
     GRK_CPARAMETERS_DEFAULTS.deviceId = deviceId;
 
     GRK_CPARAMETERS_DEFAULTS.duration = duration;
@@ -373,7 +380,10 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
     // GRK_CPARAMETERS_DEFAULTS.writeTLM = writeTLM;
 
     GRK_CPARAMETERS_DEFAULTS.verbose = verbose;
-    GRK_CPARAMETERS_DEFAULTS.sharedMemoryInterface = sharedMemoryInterface;
+    // GRK_CPARAMETERS_DEFAULTS.sharedMemoryInterface = sharedMemoryInterface;
+
+    // Initialize threads and verbose
+    grk_initialize(nullptr, GRK_CPARAMETERS_DEFAULTS.numThreads, GRK_CPARAMETERS_DEFAULTS.verbose);
 }
 
 void blosc2_grok_destroy() {
