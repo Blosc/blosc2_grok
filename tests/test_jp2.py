@@ -60,7 +60,7 @@ project_dir = Path(__file__).parent.parent
         # ({'framerate': 8}), # Would make sense if we had more than one frame
         ({'apply_icc_': True}),
         # ({'num_threads': 4}),  # CI does not have enough cores to make this faster
-        ({'num_threads': 1}),
+        # ({'num_threads': 1}),  # CI does not have enough cores to make this faster
         # ({'deviceId': 8}),  # Meant for multi-GPU systems
         ({'duration': 1}),
         ({'repeats': 2}),
