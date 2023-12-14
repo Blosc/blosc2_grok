@@ -50,16 +50,16 @@ project_dir = Path(__file__).parent.parent
         ({'precinct_size': (64, 64)}),
         ({'precinct_size': (128, 128)}),
         ({'offset': (33, 40)}),
-        #({'mct': 1}),  # TODO: makes CI to crash
+        # ({'mct': 1}),  # TODO: makes CI to crash
         # ({'mct': 1, 'irreversible': True}),  # TODO: makes CI to crash
         ({'max_cs_size': 256}),
         ({'max_cs_size': 256, 'quality_mode': 'rates', 'quality_layers': np.array([5], dtype=np.float64)}),
         ({'max_comp_size': 10**9}),
         ({'rsiz': blosc2_grok.GrkProfile.GRK_PROFILE_0}),
         ({'rsiz': blosc2_grok.GrkProfile.GRK_PROFILE_1}),
-        # # ({'framerate': 8}), # Would make sense if we had more than one frame
+        # ({'framerate': 8}), # Would make sense if we had more than one frame
         ({'apply_icc_': True}),
-        ({'num_threads': 4}),
+        # ({'num_threads': 4}),  # CI does not have enough cores to make this faster
         ({'num_threads': 1}),
         # ({'deviceId': 8}),  # Meant for multi-GPU systems
         ({'duration': 1}),
