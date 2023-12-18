@@ -95,7 +95,7 @@ See the [examples](examples/) directory for more examples.
 
 ## Thanks
 
-Thanks to Aaron Boxer, the original author of the [grok library](https://github.com/GrokImageCompression/grok), for his help in making this plugin possible.  Also, thanks to Marta Iborra, from the Blosc Development Team, for doing most of the job in making this plugin possible.
+Thanks to Marta Iborra, from the Blosc Development Team, for doing most of the job in making this plugin possible, and J. David Ibáñez and Francesc Alted for the initial contributions.  Also, thanks to Aaron Boxer, the original author of the [grok library](https://github.com/GrokImageCompression/grok), for his help in ironing out issues for making this interaction possible. 
 
 That's all folks!
 
