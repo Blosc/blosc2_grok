@@ -23,6 +23,7 @@ blosc2.register_codec("grok", 160)
 
 # Set the params for the grok codec
 kwargs = {}
+kwargs['cod_format'] = blosc2_grok.GrkFileFmt.GRK_FMT_JP2
 kwargs['quality_mode'] = "dB"
 kwargs['quality_layers'] = np.array([5], dtype=np.float64)
 blosc2_grok.set_params_defaults(**kwargs)
