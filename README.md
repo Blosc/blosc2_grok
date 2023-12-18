@@ -19,7 +19,7 @@ import blosc2_grok
 from PIL import Image
 
 # Register the grok codec
-blosc2.register_codec(blosc2_grok, 160)
+blosc2.register_codec("grok", 160)
 
 # Set the params for the grok codec
 kwargs = {}
