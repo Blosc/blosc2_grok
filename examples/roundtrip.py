@@ -24,9 +24,6 @@ def compress(im, urlpath=None, **kwargs):
     """
     # Convert the image to a numpy array
     np_array = np.asarray(im)
-    if np_array.ndim == 3:
-        np_array = np.transpose(np_array, [2, 0, 1])
-        np_array = np_array.copy()
 
     # Register codec locally for now
     blosc2.register_codec('grok', 160)
@@ -38,7 +35,6 @@ def compress(im, urlpath=None, **kwargs):
     # splitmode, because these don't work with the codec.
     cparams = {
         'codec': 160,
-        # 'nthreads': nthreads,
         'filters': [],
         'splitmode': blosc2.SplitMode.NEVER_SPLIT,
     }
@@ -69,22 +65,16 @@ if __name__ == '__main__':
     add_argument('inputfile')
     args = parser.parse_args()
 
-    layer_rate = np.array([10], dtype=np.float64)
-    # layer_rate[0] = 1
-    layer_distortion = np.zeros(1, dtype=np.float64)
-    layer_distortion[0] = 1
+    quality_mode = 'rates'
+    # quality_mode = 'dB'
+    quality_layers = np.array([5], dtype=np.float64)
     kwargs = {'cod_format': blosc2_grok.GrkFileFmt.GRK_FMT_JP2,
               'verbose': True,
-              # 'layer_rate': layer_rate, 'numlayers': 1,
-              # 'layer_distortion': layer_distortion,
-              # 'irreversible': True,
+              # 'quality_mode': quality_mode,
+              # 'quality_layers': quality_layers,
               }
     print(kwargs)
 
     im = Image.open(args.inputfile)
-    # print("mode: ", im.mode)
-    # print("bands ", im.getbands())
-    # print("size ", im.size)
-    # print("info ", im.info)
 
     array = compress(im, **kwargs)

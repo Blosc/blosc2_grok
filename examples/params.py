@@ -33,7 +33,6 @@ def compress(im, urlpath=None, **kwargs):
     # splitmode, because these don't work with the codec.
     cparams = {
         'codec': 160,
-        # 'nthreads': nthreads,
         'filters': [],
         'splitmode': blosc2.SplitMode.NEVER_SPLIT,
     }
@@ -77,10 +76,6 @@ if __name__ == '__main__':
     print(kwargs)
 
     im = Image.open(args.inputfile)
-    # print("mode: ", im.mode)
-    # print("bands ", im.getbands())
-    # print("size ", im.size)
-    # print("info ", im.info)
 
     # Register codec locally for now
     blosc2.register_codec('grok', 160)
@@ -95,14 +90,17 @@ if __name__ == '__main__':
 
     print("Performing rates compression ...")
     kwargs['quality_mode'] = "rates"
-    kwargs['quality_layers'] = np.array([5], dtype=np.float64)
+    kwargs['quality_layers'] = np.array([10], dtype=np.float64)
     arr = compress(im, "rates.b2nd", **kwargs)
 
     if args.outputfile is not None:
         im = Image.fromarray(arr)
-        im.save(args.outputfile)
+        im.save(args.outputfile + 'rates.png')
 
     print("Performing dB compression ...")
     kwargs['quality_mode'] = "dB"
-    kwargs['quality_layers'] = np.array([5], dtype=np.float64)
-    compress(im, "dB.b2nd", **kwargs)
+    kwargs['quality_layers'] = np.array([45], dtype=np.float64)
+    arr = compress(im, "dB.b2nd", **kwargs)
+    if args.outputfile is not None:
+        im = Image.fromarray(arr)
+        im.save(args.outputfile + 'dB.png')
