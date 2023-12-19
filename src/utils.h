@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <cmath>
 #include <cstdio>
+#include <cstdint>
 
 #ifdef __cplusplus
 extern "C" {
