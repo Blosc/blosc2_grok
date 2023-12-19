@@ -58,7 +58,8 @@ print(bl_array.info)
 
 ## Parameters for compression
 
-The following parameters are available for compression for grok, with their defaults.  Most of them are named after the ones in the [Pillow library](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#jpeg-2000-saving) and have the same meaning.  The ones that are not in Pillow are marked with a `*` and you can get more information about them in the [grok documentation](https://github.com/GrokImageCompression/grok/wiki/3.-grk_compress), or by following the provided links.
+The following parameters are available for compression for grok, with their defaults.  Most of them are named after the ones in the [Pillow library](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#jpeg-2000-saving) and have the same meaning.  The ones that are not in Pillow are marked with a `*` and you can get more information about them in the [grok documentation](https://github.com/GrokImageCompression/grok/wiki/3.-grk_compress), or by following the provided links.  For those marked with a ``**``, you can get more information in the [grok.h header](https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
+).
 
     'tile_size': (0, 0),
     'tile_offset': (0, 0),
@@ -84,10 +85,12 @@ The following parameters are available for compression for grok, with their defa
     * 'deviceId': 0,  # Equivalent to -G, -device_id
     * 'duration': 0,  # Equivalent to -J, -duration
     * 'repeats': 1,  # Equivalent to -e, -repetitions
-    * 'verbose': False,
-    * 'enableTilePartGeneration': False,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
-    * 'max_cs_size': 0,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
-    * 'max_comp_size': 0,  # See https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975
+    * 'mode': GrkMode.DEFAULT,  # Equivalent to -M, -mode
+    * 'verbose': False,  # Equivalent to -v, -verbose
+    ** 'enableTilePartGeneration': False,  # See header of grok.h above
+    ** 'max_cs_size': 0,  # See header of grok.h above
+    ** 'max_comp_size': 0,  # See header of grok.h above
+
 
 ## More examples
 
