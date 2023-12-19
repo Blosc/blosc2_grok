@@ -258,7 +258,7 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
 void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *tile_offset,
                                     int numlayers, char *quality_mode, double *quality_layers,
                                     int numgbits, char *progression,
-                                    int num_resolutions, int64_t *codeblock_size,
+                                    int num_resolutions, int64_t *codeblock_size, int cblk_style,
                                     bool irreversible, int roi_compno, int roi_shift, const int64_t *precinct_size,
                                     const int64_t *offset,
                                     GRK_SUPPORTED_FILE_FMT decod_format,
@@ -339,7 +339,7 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
     GRK_CPARAMETERS_DEFAULTS.roi_compno = roi_compno;
     GRK_CPARAMETERS_DEFAULTS.roi_shift = roi_shift;
 
-    // GRK_CPARAMETERS_DEFAULTS.cblk_sty = codeblock_style;
+    GRK_CPARAMETERS_DEFAULTS.cblk_sty = cblk_style;
 
     GRK_CPARAMETERS_DEFAULTS.image_offset_x0 = offset[0];
     GRK_CPARAMETERS_DEFAULTS.image_offset_y0 = offset[1];

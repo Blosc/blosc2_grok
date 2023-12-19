@@ -69,16 +69,13 @@ if __name__ == '__main__':
     add_argument('inputfile')
     add_argument('-o', '--outputfile', type=str, help='File name from decompressed image')
     args = parser.parse_args()
-
-    kwargs = {'cod_format': blosc2_grok.GrkFileFmt.GRK_FMT_JP2,
-              'verbose': True,
-              }
-    print(kwargs)
-
     im = Image.open(args.inputfile)
 
     # Register codec locally for now
     blosc2.register_codec('grok', 160)
+    # Make a first run to initialize everything
+    kwargs = {}
+    _ = compress(im, "lossless.b2nd", **kwargs)
 
     print("Performing lossless compression with 1 thread ...")
     kwargs['num_threads'] = 1

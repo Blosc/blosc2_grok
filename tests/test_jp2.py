@@ -19,7 +19,7 @@ import blosc2_grok
 project_dir = Path(__file__).parent.parent
 @pytest.mark.parametrize('image', [project_dir / 'examples/kodim23.png', project_dir / 'examples/MI04_020751.tif'])
 @pytest.mark.parametrize(
-    'args',
+    'kwargs',
     [
         ({}),
         ({'quality_mode': 'rates', 'quality_layers': np.array([5], dtype=np.float64)}),
@@ -41,6 +41,7 @@ project_dir = Path(__file__).parent.parent
         ({'codeblock_size': (4, 4)}),
         ({'codeblock_size': (8, 64)}),
         ({'codeblock_size': (256, 8)}),
+        ({'mode': blosc2_grok.GrkMode.HT}),
         ({'roi_compno': 0}),
         ({'roi_compno': 1}),
         ({'roi_compno': 2}),
@@ -67,12 +68,7 @@ project_dir = Path(__file__).parent.parent
         ({'repeats': 0}),
     ],
 )
-def test_jp2(image, args):
-    kwargs = {'cod_format': blosc2_grok.GrkFileFmt.GRK_FMT_JP2,
-              'verbose': True,
-              }
-    kwargs.update(args)
-
+def test_jp2(image, kwargs):
     # Register codec locally for now
     blosc2.register_codec('grok', 160)
 

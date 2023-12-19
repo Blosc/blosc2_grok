@@ -32,7 +32,7 @@ void blosc2_grok_destroy();
 void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *tile_offset,
                                     int numlayers, char *quality_mode, double *quality_layers,
                                     int numgbits, char *progression,
-                                    int num_resolutions, int64_t *codeblock_size,
+                                    int num_resolutions, int64_t *codeblock_size, int cblk_style,
                                     bool irreversible, int roi_compno, int roi_shift, const int64_t *precinct_size,
                                     const int64_t *offset,
                                     GRK_SUPPORTED_FILE_FMT decod_format,

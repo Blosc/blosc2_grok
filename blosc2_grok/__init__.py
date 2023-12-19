@@ -79,6 +79,24 @@ class GrkProfile(Enum):
     GRK_PROFILE_PART2_EXTENSIONS_MASK = 0x3FFF
 
 
+class GrkMode(Enum):
+    """
+    Available grok modes (aka codeblock styles).
+    """
+
+    DEFAULT = 0x000
+    LAZY = 0x001  # Selective arithmetic coding bypass
+    RESET = 0x002  # Reset context probabilities on coding pass boundaries
+    TERMALL = 0x004  # Termination on each coding pass
+    VSC = 0x008  # Vertical stripe causal context
+    PTERM = 0x010  # Predictable termination
+    SEGSYM = 0x020  # Segmentation symbols are used
+    HT = 0x040  # high throughput block coding
+    HT_MIXED = 0x080  # high throughput block coding - mixed
+    HT_PHLD = 0x100  # high throughput block coding - placeholder
+    JPH_RSIZ_FLAG = 0x4000  # for JPH, bit 14 of RSIZ must be set to 1
+
+
 def get_libpath():
     system = platform.system()
     if system in ["Linux", "Darwin"]:
@@ -117,19 +135,20 @@ params_defaults = {
     'progression': "LRCP",
     'num_resolutions': 6,
     'codeblock_size': (64, 64),
-    'irreversible': False,
+    'mode': GrkMode.DEFAULT,
     # 10 - 19
+    'irreversible': False,
     'roi_compno': -1,
     'roi_shift': 0,
     'precinct_size': (0, 0),
     'offset': (0, 0),
     'decod_format': GrkFileFmt.GRK_FMT_UNK,
-    'cod_format': GrkFileFmt.GRK_FMT_UNK,
+    'cod_format': GrkFileFmt.GRK_FMT_JP2,
     'enableTilePartGeneration': False,
     'mct': 0,
     'max_cs_size': 0,
+    # 20 - 29
     'max_comp_size': 0,
-    # 20 - 28
     'rsiz': GrkProfile.GRK_PROFILE_NONE,
     'framerate': 0,
     'apply_icc_': False,
@@ -143,6 +162,20 @@ params_defaults = {
 
 
 def set_params_defaults(**kwargs):
+    """
+    Set the parameters for grok.
+    :param kwargs: dict
+        See README.md .
+    :return: None
+
+    Warning
+    -------
+    If you first call this with 'cod_format' different from default
+    >>> blosc2_grok.set_default_params({'cod_format': blosc2_grok.GrkFileFmt.GRK_FMT_J2K})
+    and then call it again with some other parameters:
+    >>> blosc2_grok.set_default_params({'irreversible': True})
+    the default for 'cod_format' will be restored to the original blosc2_grok.GrkFileFmt.GRK_FMT_JP2 in grok.
+    """
     # Check arguments
     not_supported = [k for k in kwargs.keys() if k not in params_defaults]
     if not_supported != []:
@@ -166,25 +199,30 @@ def set_params_defaults(**kwargs):
     args[0] = np.array(args[0], dtype=np.int64)
     args[1] = np.array(args[1], dtype=np.int64)
     args[8] = np.array(args[8], dtype=np.int64)
-    args[12] = np.array(args[2], dtype=np.int64)
     args[13] = np.array(args[13], dtype=np.int64)
+    args[14] = np.array(args[14], dtype=np.int64)
 
     # Get value of enumerate
-    args[14] = args[14].value
+    args[9] = args[9].value
     args[15] = args[15].value
-    args[20] = args[20].value
-    args[23] = args[23].value
+    args[16] = args[16].value
+    args[21] = args[21].value
+    args[24] = args[24].value
+
+    if args[9] == GrkMode.HT and args[3] is not None:
+        raise ValueError("High throughput mode with quality mode activated is not currently supported.")
 
     lib.blosc2_grok_set_default_params.argtypes = ([np.ctypeslib.ndpointer(dtype=np.int64)] * 2 +
                                                    [ctypes.c_int] + [ctypes.c_char_p] + [np.ctypeslib.ndpointer(dtype=np.float64)] +
                                                    [ctypes.c_int] + [ctypes.c_char_p] +
-                                                   [ctypes.c_int] + [np.ctypeslib.ndpointer(dtype=np.int64)] +
+                                                   [ctypes.c_int] + [np.ctypeslib.ndpointer(dtype=np.int64)] + [ctypes.c_int] +
                                                    [ctypes.c_bool] + [ctypes.c_int] * 2 + [np.ctypeslib.ndpointer(dtype=np.int64)] +
                                                    [np.ctypeslib.ndpointer(dtype=np.int64)] +
                                                    [ctypes.c_int] +
                                                    [ctypes.c_int] + [ctypes.c_bool] +
                                                    [ctypes.c_int] * 5 + [ctypes.c_bool] +
                                                    [ctypes.c_int] * 5 + [ctypes.c_bool])
+
     lib.blosc2_grok_set_default_params(*args)
 
 
