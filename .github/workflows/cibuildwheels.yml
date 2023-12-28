@@ -65,7 +65,7 @@ jobs:
             cmd /V /C "set BLOSC_TRACE=1 && python -m pytest {project}/tests"
 
       - name: Build wheels (Linux / Mac OSX x86_64)
-        if: ${{ matrix.os != 'windows-latest'}}
+        if: ${{ matrix.os != 'windows-latest' && matrix.arch != 'aarch64' }}
         uses: pypa/cibuildwheel@v2.14.1
         env:
           # The build requirements should be installed by the pyproject.toml specs
@@ -77,6 +77,14 @@ jobs:
             BLOSC_TRACE=1 python -m pytest {project}/tests
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
+
+      - name: Build wheels (Ubuntu aarch64)
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.arch == 'aarch64' }}
+        uses: pypa/cibuildwheel@v2.14.1
+        env:
+          # The build requirements should be installed by the pyproject.toml specs
+          CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
+          CIBW_ARCHS_LINUX: "aarch64"
 
 #      - name: Build wheels (Mac OSX arm64)
 #        if: ${{ matrix.os != 'windows-latest' && runner.os != 'Linux' }}
