@@ -25,13 +25,13 @@ jobs:
         exclude:
           # Exclude arm64 on Windows
           - os: windows-latest
-              arch: arm64
+            arch: arm64
           # Exclude arm64 on MacOS
           - os: macos-latest
-              arch: arm64
+            arch: arm64
           # Exclude x86_64 on Raspberry Pi
           - os: rpi5
-              arch: x86_64
+            arch: x86_64
 
     steps:
       - name: Checkout repo
