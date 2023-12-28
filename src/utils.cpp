@@ -89,20 +89,11 @@ PPMImage *readPPM(const char *filename)
 
 
 int get_cbuffer(PPMImage* img, uint8_t *c_buffer) {
-    uint8_t *comp0 = (uint8_t *)malloc(img->x * img->y);
-    uint8_t *comp1 = (uint8_t *)malloc(img->x * img->y);
-    uint8_t *comp2 = (uint8_t *)malloc(img->x * img->y);
     for (int i = 0; i < img->x * img->y; ++i) {
-        comp0[i] = img->data[i].red;
-        comp1[i] = img->data[i].green;
-        comp2[i] = img->data[i].blue;
+        c_buffer[i * 3] = img->data[i].red;
+        c_buffer[i * 3 + 1] = img->data[i].green;
+        c_buffer[i * 3 + 2] = img->data[i].blue;
     }
-    memcpy(c_buffer, comp0, img->x * img->y);
-    memcpy(c_buffer + img->x * img->y, comp1, img->x * img->y);
-    memcpy(c_buffer + 2 * img->x * img->y, comp2, img->x * img->y);
 
-    free(comp0);
-    free(comp1);
-    free(comp2);
     return 0;
 }

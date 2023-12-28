@@ -22,6 +22,7 @@ Successful image roundtrip!
 #include "blosc2.h"
 #include "blosc2_grok.h"
 #include "grok.h"
+#include "blosc2/codecs-registry.h"
 
 int comp_decomp() {
     const uint32_t dimX = 640;
