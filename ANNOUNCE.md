@@ -1,9 +1,10 @@
-Announcing blosc2-grok 0.1.0
+Announcing blosc2-grok 0.2.0
 ============================
 
-This is the first public release.  This provides the ability to use the
-[grok](https://github.com/GrokImageCompression/grok) codec as dynamic plugin for Blosc2.
-
+This is a minor release, were the `cod_format` default value was change to JP2 
+and the `mode` param was added to activate high throughput.
+Furthermore, with the new Python-Blosc2 release, there is no need to register the
+codec. Instead, just use its id `blosc2.Codec.GROK`.
 For more info, you can have a look at the release notes in:
 
 https://github.com/Blosc/blosc2_grok/releases
