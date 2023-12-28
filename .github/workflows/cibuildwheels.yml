@@ -21,15 +21,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        # arch: [x86_64, arm64]
-        arch: [arm64]
+        # arch: [x86_64, aarch64]
+        arch: [aarch64]
         exclude:
-          # Exclude arm64 on Windows
           - os: windows-latest
-            arch: arm64
-          # Exclude arm64 on MacOS
+            arch: aarch64
           - os: macos-latest
-            arch: arm64
+            arch: aarch64
 
     steps:
       - name: Checkout repo
