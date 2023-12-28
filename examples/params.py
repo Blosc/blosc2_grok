@@ -32,13 +32,13 @@ def compress(im, urlpath=None, **kwargs):
     # Define the compression and decompression parameters. Disable the filters and the
     # splitmode, because these don't work with the codec.
     cparams = {
-        'codec': 160,
+        'codec': blosc2.Codec.GROK,
         'filters': [],
         'splitmode': blosc2.SplitMode.NEVER_SPLIT,
     }
 
     # Transform the numpy array to a blosc2 array. This is where compression happens, and
-    # the HTJ2K codec is called.
+    # the grok codec is called.
     start = time.time()
     bl_array = blosc2.asarray(
         np_array,
@@ -71,8 +71,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     im = Image.open(args.inputfile)
 
-    # Register codec locally for now
-    blosc2.register_codec('grok', 160)
     # Make a first run to initialize everything
     kwargs = {}
     _ = compress(im, "lossless.b2nd", **kwargs)

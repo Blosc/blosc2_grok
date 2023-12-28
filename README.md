@@ -18,9 +18,6 @@ import numpy as np
 import blosc2_grok
 from PIL import Image
 
-# Register the grok codec
-blosc2.register_codec("grok", 160)
-
 # Set the params for the grok codec
 kwargs = {}
 kwargs['cod_format'] = blosc2_grok.GrkFileFmt.GRK_FMT_JP2
@@ -31,7 +28,7 @@ blosc2_grok.set_params_defaults(**kwargs)
 # Define the compression and decompression parameters for Blosc2.
 # Disable the filters and do not split blocks (these won't work with grok).
 cparams = {
-    'codec': 160,
+    'codec': blosc2.Codec.GROK,
     'filters': [],
     'splitmode': blosc2.SplitMode.NEVER_SPLIT,
 }

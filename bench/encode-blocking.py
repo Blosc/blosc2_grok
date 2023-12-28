@@ -24,13 +24,10 @@ from time import time
 
 
 if __name__ == '__main__':
-    # Register grok codec locally
-    blosc2.register_codec('grok', 160)
-
     # Define the compression and decompression parameters. Disable the filters and the
     # splitmode, because these don't work with the codec.
     cparams = {
-        'codec': 160,
+        'codec': blosc2.Codec.GROK,
         'nthreads': 4,
         'filters': [],
         'splitmode': blosc2.SplitMode.NEVER_SPLIT,
