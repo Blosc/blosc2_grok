@@ -21,8 +21,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [x86_64]
         # arch: [x86_64, aarch64]
-        arch: [aarch64]
         exclude:
           - os: windows-latest
             arch: aarch64
@@ -40,6 +40,10 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Set up QEMU
+        if: ${{ matrix.arch == 'aarch64' }}
+        uses: docker/setup-qemu-action@v3
+
       - name: Install Ninja
         id: ninja
         uses: turtlesec-no/get-ninja@main
@@ -48,10 +52,6 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
-
-      - name: Set up QEMU
-        if: ${{ matrix.arch == 'aarch64' }}
-        uses: docker/setup-qemu-action@v3
 
       - name: Update Clang
         if: ${{ matrix.os == 'macos-latest' && matrix.arch == 'arm64' }}
@@ -90,15 +90,15 @@ jobs:
           CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
           CIBW_ARCHS_LINUX: "aarch64"
 
-#      - name: Build wheels (Mac OSX arm64)
-#        if: ${{ matrix.os != 'windows-latest' && runner.os != 'Linux' }}
-#        uses: pypa/cibuildwheel@v2.14.1
-#        env:
-#          # The build requirements should be installed by the pyproject.toml specs
-#          CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=arm64 DONT_BUILD_EXAMPLES=1
-#          CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
-#          CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
-#          CIBW_ARCHS_MACOS: "arm64"
+      - name: Build wheels (Mac OSX arm64)
+        if: ${{ matrix.os != 'windows-latest' && runner.os != 'Linux' }}
+        uses: pypa/cibuildwheel@v2.14.1
+        env:
+          # The build requirements should be installed by the pyproject.toml specs
+          CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=arm64 DONT_BUILD_EXAMPLES=1
+          CIBW_BUILD: 'cp39-* cp310-* cp311-* cp312-*'
+          CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
+          CIBW_ARCHS_MACOS: "arm64"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v3
