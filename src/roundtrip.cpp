@@ -34,6 +34,7 @@ Decompress OK
 
 #include "b2nd.h"
 #include "blosc2.h"
+#include "blosc2/codecs-registry.h"
 #include "blosc2_grok.h"
 #include "grok.h"
 #include "utils.h"
