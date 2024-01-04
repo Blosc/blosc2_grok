@@ -73,7 +73,7 @@ Post-release actions
 --------------------
 
 - Edit *VERSION* symbols in blosc2_grok/__init__.py *and* pyproject.toml in main to increment the
-  version to the next minor one (i.e. X.Y.Z --> X.Y.(Z+1).dev).
+  version to the next minor one (i.e. X.Y.Z --> X.Y.(Z+1).dev0).
 
 - Create new headers for adding new features in ``RELEASE_NOTES.md``
   and add this place-holder instead:

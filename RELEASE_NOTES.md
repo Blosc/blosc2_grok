@@ -1,5 +1,10 @@
 # Release notes
 
+## Changes from 0.2.0 to 0.2.1
+
+#XXX version-specific blurb XXX#
+
+
 ## Changes from 0.1.0 to 0.2.0
 
 * Default `cod_format` changed to JP2.
