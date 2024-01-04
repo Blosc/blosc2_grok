@@ -69,9 +69,6 @@ project_dir = Path(__file__).parent.parent
     ],
 )
 def test_jp2(image, kwargs):
-    # Register codec locally for now
-    blosc2.register_codec('grok', 160)
-
     im = Image.open(image)
     # Convert the image to a numpy array
     np_array = np.asarray(im)
@@ -84,7 +81,7 @@ def test_jp2(image, kwargs):
     blosc2_grok.set_params_defaults(**kwargs)
 
     cparams = {
-        'codec': 160,
+        'codec': blosc2.Codec.GROK,
         'filters': [],
         'splitmode': blosc2.SplitMode.NEVER_SPLIT,
     }

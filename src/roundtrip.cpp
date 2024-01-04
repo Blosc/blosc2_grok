@@ -34,6 +34,7 @@ Decompress OK
 
 #include "b2nd.h"
 #include "blosc2.h"
+#include "blosc2/codecs-registry.h"
 #include "blosc2_grok.h"
 #include "grok.h"
 #include "utils.h"
@@ -69,23 +70,10 @@ int comp_decomp() {
     memcpy(c_buffer, img->grayscale, bufLen);
 
     blosc2_cparams cparams = BLOSC2_CPARAMS_DEFAULTS;
-    cparams.compcode = 160;
+    cparams.compcode = BLOSC_CODEC_GROK;
     // cparams.compcode = BLOSC_BLOSCLZ;
     // cparams.compcode = BLOSC_ZSTD;
     // cparams.clevel = 9;
-    //  Register grok codec
-    blosc2_codec grok_codec = {0};
-    grok_codec.compname = (char *)"grok";
-    grok_codec.compcode = 160;
-    grok_codec.complib = 1;
-    grok_codec.version = 0;
-    grok_codec.encoder = NULL;
-    grok_codec.decoder = NULL;
-    int rc = blosc2_register_codec(&grok_codec);
-    if (rc < 0) {
-        printf("Error registering codec\n");
-        return -1;
-    }
 
     cparams.typesize = itemsize;
     for (int i = 0; i < BLOSC2_MAX_FILTERS; i++) {

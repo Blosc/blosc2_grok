@@ -25,22 +25,19 @@ def compress(im, urlpath=None, **kwargs):
     # Convert the image to a numpy array
     np_array = np.asarray(im)
 
-    # Register codec locally for now
-    blosc2.register_codec('grok', 160)
-
     # Set the parameters that will be used by the codec
     blosc2_grok.set_params_defaults(**kwargs)
 
     # Define the compression and decompression parameters. Disable the filters and the
     # splitmode, because these don't work with the codec.
     cparams = {
-        'codec': 160,
+        'codec': blosc2.Codec.GROK,
         'filters': [],
         'splitmode': blosc2.SplitMode.NEVER_SPLIT,
     }
 
     # Transform the numpy array to a blosc2 array. This is where compression happens, and
-    # the HTJ2K codec is called.
+    # the grok codec is called.
     bl_array = blosc2.asarray(
         np_array,
         chunks=np_array.shape,
