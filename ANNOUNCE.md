@@ -1,10 +1,9 @@
 Announcing blosc2-grok 0.2.0
 ============================
 
-This is a minor release, were the `cod_format` default value was change to JP2 
-and the `mode` param was added to activate high throughput.
-Furthermore, with the new Python-Blosc2 release, there is no need to register the
-codec. Instead, just use its id `blosc2.Codec.GROK`.
+This is a minor release, were the default parameters are
+automatically changed to the defaults in blosc2-grok
+without having to call `set_params_defaults`.
 For more info, you can have a look at the release notes in:
 
 https://github.com/Blosc/blosc2_grok/releases
