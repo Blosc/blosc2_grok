@@ -1,5 +1,10 @@
 # Release notes
 
+## Changes from 0.2.1 to 0.2.2
+
+#XXX version-specific blurb XXX#
+
+
 ## Changes from 0.2.0 to 0.2.1
 
 * Avoid calling `set_params_defaults` for setting own blosc2_grok defaults.

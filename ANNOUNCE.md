@@ -1,7 +1,7 @@
-Announcing blosc2-grok 0.2.0
+Announcing blosc2-grok 0.2.1
 ============================
 
-This is a minor release, were the default parameters are
+This is a minor release, where the default parameters are
 automatically changed to the defaults in blosc2-grok
 without having to call `set_params_defaults`.
 For more info, you can have a look at the release notes in:
