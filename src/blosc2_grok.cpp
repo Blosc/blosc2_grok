@@ -12,6 +12,15 @@
 #include "blosc2_grok_public.h"
 
 static grk_cparameters GRK_CPARAMETERS_DEFAULTS = {0};
+static bool GRK_CPARAMETERS_INITIALIZED = false;
+
+
+void blosc2_grok_init_defaults(void) {
+    // initialize grok defaults
+    grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
+    GRK_CPARAMETERS_DEFAULTS.cod_format = GRK_FMT_JP2;
+    GRK_CPARAMETERS_INITIALIZED = true;
+}
 
 int blosc2_grok_encoder(
     const uint8_t *input,
@@ -68,6 +77,9 @@ int blosc2_grok_encoder(
     grk_stream_params *streamParams;
 
     if (codec_params == NULL) {
+        if (!GRK_CPARAMETERS_INITIALIZED) {
+            blosc2_grok_init_defaults();
+        }
         compressParams = &GRK_CPARAMETERS_DEFAULTS;
         streamParams = (grk_stream_params *)malloc(sizeof(grk_stream_params));
         grk_set_default_stream_params(streamParams);
@@ -248,12 +260,11 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
     return output_len;
 }
 
+// If the name of "blosc2_grok_init" is changed, its corresponding
+// call should also be modified in the fill_codec function (in c-blosc2/blosc/blosc2.c)
 void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     // initialize library
     grk_initialize(nullptr, nthreads, verbose);
-    // initialize grok defaults
-    grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
-    GRK_CPARAMETERS_DEFAULTS.cod_format = GRK_FMT_JP2;
 }
 
 void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *tile_offset,
@@ -270,6 +281,12 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
                                     GRK_RATE_CONTROL_ALGORITHM rateControlAlgorithm, int num_threads, int deviceId,
                                     int duration, int repeats,
                                     bool verbose) {
+    if (!GRK_CPARAMETERS_INITIALIZED) {
+        // Initialize defaults
+        blosc2_grok_init_defaults();
+    }
+
+    // Change defaults
     if (tile_size[0] == 0 && tile_size[1] == 0) {
         GRK_CPARAMETERS_DEFAULTS.tile_size_on = false;
     } else {
