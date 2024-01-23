@@ -116,9 +116,6 @@ def print_libpath():
     print(libpath, end="")
 
 
-# Initialize grok
-lib.blosc2_grok_init(0, False)
-
 # Deinitialize grok when exiting
 @atexit.register
 def destroy():
