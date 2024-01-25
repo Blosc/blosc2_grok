@@ -2,7 +2,9 @@
 
 ## Changes from 0.2.1 to 0.2.2
 
-#XXX version-specific blurb XXX#
+* Changed initialization of the grok library
+  to first time it is used. This evicts having to import
+  the `blosc2-grok` package to use the plugin.
 
 
 ## Changes from 0.2.0 to 0.2.1

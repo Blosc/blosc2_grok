@@ -1,9 +1,9 @@
-Announcing blosc2-grok 0.2.1
+Announcing blosc2-grok 0.2.2
 ============================
 
-This is a minor release, where the default parameters are
-automatically changed to the defaults in blosc2-grok
-without having to call `set_params_defaults`.
+This is a minor release, where the grok library
+is automatically initialized when needed instead of
+having to import the package.
 For more info, you can have a look at the release notes in:
 
 https://github.com/Blosc/blosc2_grok/releases
