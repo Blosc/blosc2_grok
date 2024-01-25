@@ -14,7 +14,7 @@ from pathlib import Path
 import atexit
 import numpy as np
 
-__version__ = "0.2.2"
+__version__ = "0.2.3.dev0"
 
 
 class GrkFileFmt(Enum):
