@@ -19,8 +19,8 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
     // initialize library
     grk_initialize(nullptr, nthreads, verbose);
     // set default parameters
-    GRK_CPARAMETERS_DEFAULTS.cod_format = GRK_FMT_JP2;
     grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
+    GRK_CPARAMETERS_DEFAULTS.cod_format = GRK_FMT_JP2;
     GRK_INITIALIZED = true;
 }
 
