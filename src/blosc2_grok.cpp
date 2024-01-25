@@ -15,10 +15,11 @@ static grk_cparameters GRK_CPARAMETERS_DEFAULTS = {0};
 static bool GRK_CPARAMETERS_INITIALIZED = false;
 
 
-void blosc2_grok_init_defaults(void) {
-    // initialize grok defaults
-    grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
+void blosc2_grok_init_defaults() {
+    // Initialize grok lib and set defaults for compression parameters
+    blosc2_grok_init(1, false);
     GRK_CPARAMETERS_DEFAULTS.cod_format = GRK_FMT_JP2;
+    grk_compress_set_default_params(&GRK_CPARAMETERS_DEFAULTS);
     GRK_CPARAMETERS_INITIALIZED = true;
 }
 
@@ -72,12 +73,13 @@ int blosc2_grok_encoder(
 
     // initialize compress parameters
     grk_codec* codec = nullptr;
-    blosc2_grok_params *codec_params = (blosc2_grok_params *)cparams->codec_params;
+    auto *codec_params = (blosc2_grok_params *)cparams->codec_params;
     grk_cparameters *compressParams;
     grk_stream_params *streamParams;
 
-    if (codec_params == NULL) {
+    if (codec_params == nullptr) {
         if (!GRK_CPARAMETERS_INITIALIZED) {
+            // Initialize grok lib and set defaults for compression parameters
             blosc2_grok_init_defaults();
         }
         compressParams = &GRK_CPARAMETERS_DEFAULTS;
@@ -173,7 +175,7 @@ beach:
     delete[] components;
     grk_object_unref(codec);
     grk_object_unref(&image->obj);
-    if (codec_params == NULL) {
+    if (codec_params == nullptr) {
         free(streamParams);
     }
 
@@ -268,9 +270,9 @@ void blosc2_grok_init(uint32_t nthreads, bool verbose) {
 }
 
 void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *tile_offset,
-                                    int numlayers, char *quality_mode, double *quality_layers,
+                                    int numlayers, char *quality_mode, const double *quality_layers,
                                     int numgbits, char *progression,
-                                    int num_resolutions, int64_t *codeblock_size, int cblk_style,
+                                    int num_resolutions, const int64_t *codeblock_size, int cblk_style,
                                     bool irreversible, int roi_compno, int roi_shift, const int64_t *precinct_size,
                                     const int64_t *offset,
                                     GRK_SUPPORTED_FILE_FMT decod_format,
@@ -282,7 +284,7 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
                                     int duration, int repeats,
                                     bool verbose) {
     if (!GRK_CPARAMETERS_INITIALIZED) {
-        // Initialize defaults
+        // Initialize grok lib and set defaults for compression parameters
         blosc2_grok_init_defaults();
     }
 
