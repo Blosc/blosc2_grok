@@ -40,7 +40,7 @@ void blosc2_grok_set_default_params(const int64_t *tile_size, const int64_t *til
                                     int duration, int repeats,
                                     bool verbose) {
     if (!GRK_INITIALIZED) {
-        blosc2_grok_init(1, true);
+        blosc2_grok_init(0, false);
     }
 
     // Change defaults
@@ -174,7 +174,7 @@ int blosc2_grok_encoder(
     int size = -1;
 
     if (!GRK_INITIALIZED) {
-        blosc2_grok_init(1, true);
+        blosc2_grok_init(0, false);
     }
 
     // Read blosc2 metadata
@@ -329,7 +329,7 @@ int beach_decoder(grk_codec * codec, int rc) {
 int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output, int32_t output_len,
                         uint8_t meta, blosc2_dparams *dparams, const void *chunk) {
     if (!GRK_INITIALIZED) {
-        blosc2_grok_init(1, true);
+        blosc2_grok_init(0, false);
     }
 
     // initialize decompress parameters
