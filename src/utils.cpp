@@ -97,3 +97,10 @@ int get_cbuffer(PPMImage* img, uint8_t *c_buffer) {
 
     return 0;
 }
+
+
+void free_PPM(PPMImage* img) {
+    free(img->data);
+    free(img->grayscale);
+    free(img);
+}

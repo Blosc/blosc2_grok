@@ -400,6 +400,7 @@ int blosc2_grok_decoder(const uint8_t *input, int32_t input_len, uint8_t *output
         }
     }
 
+    grk_object_unref(codec);
     return output_len;
 }
 

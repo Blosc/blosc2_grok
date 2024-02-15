@@ -22,6 +22,8 @@ typedef struct {
 
 PPMImage *readPPM(const char *filename);
 int get_cbuffer(PPMImage* img, uint8_t *c_buffer);
+void free_PPM(PPMImage* img);
+
 #ifdef __cplusplus
 }
 #endif

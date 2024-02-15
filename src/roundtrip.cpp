@@ -130,7 +130,9 @@ beach:
     // cleanup
     BLOSC_ERROR(b2nd_free_ctx(ctx));
     BLOSC_ERROR(b2nd_free(arr));
+    free(c_buffer);
     free(buffer);
+    free_PPM(img);
 
     return BLOSC2_ERROR_SUCCESS;
 }
