@@ -1,9 +1,8 @@
-Announcing blosc2-grok 0.2.2
+Announcing blosc2-grok 0.2.3
 ============================
 
-This is a minor release, where the grok library
-is automatically initialized when needed instead of
-having to import the package.
+This is a patch release where a leak when decompressing
+has been fixed.
 For more info, you can have a look at the release notes in:
 
 https://github.com/Blosc/blosc2_grok/releases

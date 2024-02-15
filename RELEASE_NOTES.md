@@ -2,7 +2,7 @@
 
 ## Changes from 0.2.2 to 0.2.3
 
-  #XXX version-specific blurb XXX#
+* Fixed a memory leak in the decoder function.
 
 
 ## Changes from 0.2.1 to 0.2.2
