@@ -89,6 +89,22 @@ The following parameters are available for compression for grok, with their defa
     ** 'max_comp_size': 0,  # See header of grok.h above
 
 
+### codec_meta as rates quality mode
+
+As a simpler way to activate the rates quality mode, if you set the `codec_meta` from the `cparams` to an
+integer different from 0, the rates quality mode will be activated with a rate value equal to `codec_meta` / 10.
+```python
+import blosc2
+
+
+cparams = {
+    'codec': blosc2.Codec.GROK,
+    'codec_meta': 5 * 10,  # cratio will be 5
+    'filters': [],
+    'splitmode': blosc2.SplitMode.NEVER_SPLIT,
+}
+```
+
 ## More examples
 
 See the [examples](examples/) directory for more examples.

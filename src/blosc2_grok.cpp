@@ -226,6 +226,15 @@ int blosc2_grok_encoder(
         compressParams = &codec_params->compressParams;
         streamParams = &codec_params->streamParams;
     }
+    if (meta != 0) {
+        // meta indicates we want rates quality mode with meta/10 cratio
+        compressParams->allocationByRateDistoration = true;
+        compressParams->numlayers = 1;
+        compressParams->layer_rate[0] = meta / 10.0;
+        if (compressParams->cod_format == NULL) {
+            compressParams->cod_format = GRK_FMT_JP2;
+        }
+    }
 
     std::unique_ptr<uint8_t[]> data;
     size_t bufLen = (size_t)numComps * ((precision + 7) / 8) * dimX * dimY;
