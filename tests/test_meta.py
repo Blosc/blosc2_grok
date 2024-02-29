@@ -16,7 +16,7 @@ import blosc2
 
 project_dir = Path(__file__).parent.parent
 @pytest.mark.parametrize('image', [project_dir / 'examples/kodim23.png', project_dir / 'examples/MI04_020751.tif'])
-@pytest.mark.parametrize('meta', [1 * 10, 2 * 10, 5 * 10, 8 * 10, 10 * 10])
+@pytest.mark.parametrize('meta', [1 * 10, 2 * 10, 5 * 10, 8 * 10, 10 * 10, 20 * 10])
 def test_meta(image, meta):
     im = Image.open(image)
     # Convert the image to a numpy array
