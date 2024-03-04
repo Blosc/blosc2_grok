@@ -92,7 +92,9 @@ The following parameters are available for compression for grok, with their defa
 ### codec_meta as rates quality mode
 
 As a simpler way to activate the rates quality mode, if you set the `codec_meta` from the `cparams` to an
-integer different from 0, the rates quality mode will be activated with a rate value equal to `codec_meta` / 10.
+integer different from 0, the rates quality mode will be activated with a rate value equal to `codec_meta` / 10. If 
+`cod_format` is not specified, the default will be used. The `codec_meta` has priority to the `rates` param set with the 
+`blosc2_grok.set_params_defaults()`.
 ```python
 import blosc2
 

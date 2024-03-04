@@ -1,8 +1,9 @@
 # Release notes
 
-## Changes from 0.2.3 to 0.2.4
+## Changes from 0.2.3 to 0.3.0
 
-#XXX version-specific blurb XXX#
+* Support specifying the `rates` value as the
+ `codec_meta` from the blosc2 cparams.
 
 
 ## Changes from 0.2.2 to 0.2.3

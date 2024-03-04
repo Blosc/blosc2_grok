@@ -1,9 +1,9 @@
-Announcing blosc2-grok 0.2.3
+Announcing blosc2-grok 0.3.0
 ============================
 
-This is a patch release where a leak when decompressing
-has been fixed.
-For more info, you can have a look at the release notes in:
+This is a minor release. Now you can specify the `rates` value
+using the `codec_meta` from blosc2 cparams (see README for more info).
+You can have a look at the release notes in:
 
 https://github.com/Blosc/blosc2_grok/releases
 
