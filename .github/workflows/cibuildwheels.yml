@@ -20,11 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        #os: [ubuntu-latest, windows-latest, macos-latest]
-        os: [ubuntu-latest]
-        #arch: [x86_64]
-        arch: [aarch64]
-        # arch: [x86_64, aarch64]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [x86_64, aarch64]
         exclude:
           - os: windows-latest
             arch: aarch64
