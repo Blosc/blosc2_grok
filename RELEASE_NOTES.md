@@ -1,5 +1,10 @@
 # Release notes
 
+## Changes from 0.3.1 to 0.3.2
+
+#XXX version-specific blurb XXX#
+
+
 ## Changes from 0.3.0 to 0.3.1
 
 * Build aarch64 wheels.
