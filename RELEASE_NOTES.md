@@ -2,7 +2,7 @@
 
 ## Changes from 0.3.0 to 0.3.1
 
-#XXX version-specific blurb XXX#
+* Build aarch64 wheels.
 
 
 ## Changes from 0.2.3 to 0.3.0

@@ -1,8 +1,7 @@
-Announcing blosc2-grok 0.3.0
+Announcing blosc2-grok 0.3.1
 ============================
 
-This is a minor release. Now you can specify the `rates` value
-using the `codec_meta` from blosc2 cparams (see README for more info).
+This is a patch release. Now aarch64/Linux wheels are also built.
 You can have a look at the release notes in:
 
 https://github.com/Blosc/blosc2_grok/releases
