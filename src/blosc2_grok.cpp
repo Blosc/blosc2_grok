@@ -184,9 +184,9 @@ int blosc2_grok_encoder(
                                 &content, &content_len));
 
     int8_t ndim;
-    int64_t shape[3];
-    int32_t chunkshape[3];
-    int32_t blockshape[3];
+    int64_t shape[4];
+    int32_t chunkshape[4];
+    int32_t blockshape[4];
     char *dtype;
     int8_t dtype_format;
     BLOSC_ERROR(
@@ -204,10 +204,8 @@ int blosc2_grok_encoder(
         dimX = blockshape[1];
         dimY = blockshape[2];
         if (ndim == 4) {
-            printf("4-dimensional block\n");
             // Multi-image block with more than 1 component
             numComps = blockshape[3];
-            printf("dimX: %d, dimY: %d, numComps: %d\n", dimX, dimY, numComps);
         }
     }
     else if (ndim == 3) {
