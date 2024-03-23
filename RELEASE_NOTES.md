@@ -2,8 +2,9 @@
 
 ## Changes from 0.3.1 to 0.3.2
 
-#XXX version-specific blurb XXX#
-
+* Support for arbitrary numbers of leading 1 dimensions in the input data.
+  This is common in image data where the leading dimensions are reserved for
+  stacks of images.
 
 ## Changes from 0.3.0 to 0.3.1
 

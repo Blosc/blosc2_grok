@@ -1,7 +1,9 @@
-Announcing blosc2-grok 0.3.1
+Announcing blosc2-grok 0.3.2
 ============================
 
-This is a patch release. Now aarch64/Linux wheels are also built.
+This is a patch release. Now, there is support for arbitrary numbers
+of leading 1 dimensions in the input data. This is common in image data
+where the leading dimensions are reserved for stacks of images.
 You can have a look at the release notes in:
 
 https://github.com/Blosc/blosc2_grok/releases
