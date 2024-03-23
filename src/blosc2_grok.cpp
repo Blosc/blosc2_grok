@@ -200,9 +200,15 @@ int blosc2_grok_encoder(
     uint32_t dimY = blockshape[1];
     uint32_t numComps = 1;
     if (dimX == 1) {
-        // Array formed by different images
+        // Leading dim is 1, so we have a multi-image block
         dimX = blockshape[1];
         dimY = blockshape[2];
+        if (ndim == 4) {
+            printf("4-dimensional block\n");
+            // Multi-image block with more than 1 component
+            numComps = blockshape[3];
+            printf("dimX: %d, dimY: %d, numComps: %d\n", dimX, dimY, numComps);
+        }
     }
     else if (ndim == 3) {
         // Single image with more than 1 component
