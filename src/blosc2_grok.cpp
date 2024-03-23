@@ -209,16 +209,7 @@ int blosc2_grok_encoder(
     uint32_t dimX = blockshape[igdim];
     uint32_t dimY = blockshape[igdim + 1];
     uint32_t numComps = 1;
-    if (dimX == 1) {
-        // Leading dim is 1, so we have a multi-image block
-        dimX = blockshape[igdim + 1];
-        dimY = blockshape[igdim + 2];
-        if ((ndim - igdim) == 4) {
-            // Multi-image block with more than 1 component
-            numComps = blockshape[igdim + 3];
-        }
-    }
-    else if ((ndim - igdim) == 3) {
+    if ((ndim - igdim) == 3) {
         // Single image with more than 1 component
         numComps = blockshape[igdim + 2];
     }
