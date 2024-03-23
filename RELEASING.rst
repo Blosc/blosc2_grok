@@ -28,6 +28,7 @@ Also::
 
   $ cd examples
   $ python roundtrip.py MI04_020751.tif
+  $ python roundtrip.py eight.png
   $ cd ..
 
 
