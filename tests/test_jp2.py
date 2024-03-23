@@ -17,7 +17,10 @@ import blosc2
 import blosc2_grok
 
 project_dir = Path(__file__).parent.parent
-@pytest.mark.parametrize('image', [project_dir / 'examples/kodim23.png', project_dir / 'examples/MI04_020751.tif'])
+@pytest.mark.parametrize('image',
+                         [project_dir / 'examples/kodim23.png',
+                          project_dir / 'examples/MI04_020751.tif',
+                          project_dir / 'examples/eight.png',])
 @pytest.mark.parametrize(
     'kwargs',
     [
@@ -68,10 +71,15 @@ project_dir = Path(__file__).parent.parent
         ({'repeats': 0}),
     ],
 )
-def test_jp2(image, kwargs):
+@pytest.mark.parametrize('leading_dims', [0, 1, 2, 3])
+def test_jp2(image, kwargs, leading_dims):
     im = Image.open(image)
     # Convert the image to a numpy array
     np_array = np.asarray(im)
+    if leading_dims > 0:
+        # Add leading dimensions
+        shape = np_array.shape
+        np_array = np_array.reshape((1,) * leading_dims + shape)
     print(np_array.shape)
 
     if kwargs.get('mct', 0) == 1 and np_array.ndim != 3:

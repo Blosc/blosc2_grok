@@ -184,9 +184,9 @@ int blosc2_grok_encoder(
                                 &content, &content_len));
 
     int8_t ndim;
-    int64_t shape[4];
-    int32_t chunkshape[4];
-    int32_t blockshape[4];
+    int64_t shape[BLOSC2_MAX_DIM];
+    int32_t chunkshape[BLOSC2_MAX_DIM];
+    int32_t blockshape[BLOSC2_MAX_DIM];
     char *dtype;
     int8_t dtype_format;
     BLOSC_ERROR(
@@ -196,21 +196,31 @@ int blosc2_grok_encoder(
     free(content);
     free(dtype);
 
-    uint32_t dimX = blockshape[0];
-    uint32_t dimY = blockshape[1];
+    // Determine image dimensions
+    // Ignore leading dimensions if they are 1
+    uint32_t igdim = 0;
+    for (int i = 0; i < ndim; ++i) {
+        if (blockshape[i] == 1) {
+            igdim++;
+        } else {
+            break;
+        }
+    }
+    uint32_t dimX = blockshape[igdim];
+    uint32_t dimY = blockshape[igdim + 1];
     uint32_t numComps = 1;
     if (dimX == 1) {
         // Leading dim is 1, so we have a multi-image block
-        dimX = blockshape[1];
-        dimY = blockshape[2];
-        if (ndim == 4) {
+        dimX = blockshape[igdim + 1];
+        dimY = blockshape[igdim + 2];
+        if ((ndim - igdim) == 4) {
             // Multi-image block with more than 1 component
-            numComps = blockshape[3];
+            numComps = blockshape[igdim + 3];
         }
     }
-    else if (ndim == 3) {
+    else if ((ndim - igdim) == 3) {
         // Single image with more than 1 component
-        numComps = blockshape[2];
+        numComps = blockshape[igdim + 2];
     }
 
     const uint32_t typesize = ((blosc2_schunk*)cparams->schunk)->typesize;
