@@ -1,5 +1,9 @@
 # Release notes
 
+## Changes from 0.3.2 to 0.3.3
+
+#XXX version-specific blurb XXX#
+
 ## Changes from 0.3.1 to 0.3.2
 
 * Support for arbitrary numbers of leading 1 dimensions in the input data.
