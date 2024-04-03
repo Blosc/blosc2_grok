@@ -35,11 +35,12 @@ set(CMAKE_FIND_FRAMEWORK NEVER)
 add_subdirectory(grok)
 
 # Build libblosc2_grok.so
-add_library(blosc2_grok MODULE blosc2_grok.cpp)
-
 if (MSVC OR MINGW)
+    add_library(blosc2_grok MODULE blosc2_grok.cpp)
     # Necessary for compiling blosc2_grok.lib
     set_property(TARGET blosc2_grok PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+else()
+    add_library(blosc2_grok SHARED blosc2_grok.cpp)
 endif()
 
 include_directories(
@@ -57,6 +58,7 @@ endif (UNIX AND NOT APPLE)
 
 # Install
 install(TARGETS blosc2_grok LIBRARY DESTINATION blosc2_grok)
+install(FILES blosc2_grok.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT DEV)
 
 # Test program
 if(NOT DEFINED ENV{DONT_BUILD_EXAMPLES})
