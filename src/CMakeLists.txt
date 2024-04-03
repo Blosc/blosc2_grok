@@ -35,12 +35,15 @@ set(CMAKE_FIND_FRAMEWORK NEVER)
 add_subdirectory(grok)
 
 # Build libblosc2_grok.so
-if (MSVC OR MINGW)
+if (APPLE AND {CMAKE_OSX_ARCHITECTURES} STREQUAL "arm64")
+    add_library(blosc2_grok SHARED blosc2_grok.cpp)
+else()
     add_library(blosc2_grok MODULE blosc2_grok.cpp)
+endif()
+
+if (MSVC OR MINGW)
     # Necessary for compiling blosc2_grok.lib
     set_property(TARGET blosc2_grok PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-else()
-    add_library(blosc2_grok SHARED blosc2_grok.cpp)
 endif()
 
 include_directories(
