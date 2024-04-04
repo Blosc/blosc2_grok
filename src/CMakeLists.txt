@@ -35,6 +35,10 @@ set(CMAKE_FIND_FRAMEWORK NEVER)
 add_subdirectory(grok)
 
 # Build libblosc2_grok.so
+# We will be using SHARED or MODULE depending on the platform.
+# Ideally, we would like to use SHARED for all platforms
+# because that allows to link with C++ code in the shared library.
+# Unfortunately, not every platform supports SHARED.
 if (UNIX AND NOT APPLE)  # Linux
     add_library(blosc2_grok SHARED blosc2_grok.cpp)
 elseif (APPLE)
