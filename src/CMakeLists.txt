@@ -37,7 +37,7 @@ add_subdirectory(grok)
 # Build libblosc2_grok.so
 if (UNIX AND NOT APPLE)  # Linux
     add_library(blosc2_grok SHARED blosc2_grok.cpp)
-else if (APPLE)
+elseif (APPLE)
     if ({CMAKE_OSX_ARCHITECTURES} STREQUAL "arm64")
         add_library(blosc2_grok SHARED blosc2_grok.cpp)
     else()
