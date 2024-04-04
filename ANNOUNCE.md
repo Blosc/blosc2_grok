@@ -1,9 +1,11 @@
-Announcing blosc2-grok 0.3.2
+Announcing blosc2-grok 0.3.3
 ============================
 
-This is a patch release. Now, there is support for arbitrary numbers
-of leading 1 dimensions in the input data. This is common in image data
-where the leading dimensions are reserved for stacks of images.
+This is a patch release. We have changed the Python extension
+from MODULE to SHARED on some platforms (Linux and MacOSX/arm64;
+the rest do not seem to support SHARED mode).  This allows for
+a C program to use the plugin as a shared library.
+
 You can have a look at the release notes in:
 
 https://github.com/Blosc/blosc2_grok/releases

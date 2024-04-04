@@ -2,7 +2,10 @@
 
 ## Changes from 0.3.2 to 0.3.3
 
-#XXX version-specific blurb XXX#
+* Change the Python extension from MODULE to SHARED on some
+  platforms (Linux and MacOSX/arm64; the rest do not seem
+  to support SHARED mode).  This allows for a C program to
+  use the plugin as a shared library.
 
 ## Changes from 0.3.1 to 0.3.2
 
