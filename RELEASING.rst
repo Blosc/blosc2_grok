@@ -43,7 +43,8 @@ Tagging
 
     $ git push --tags
 
-- If you happen to have to delete the tag, such as artifacts demonstrates a fault, first delete it locally::
+- If you happen to have to delete the tag, such as artifacts demonstrates a fault,
+  first delete it locally::
 
     $ git tag --delete vX.Y.Z
 
