@@ -88,6 +88,9 @@ The following parameters are available for compression for grok, with their defa
     ** 'max_cs_size': 0,  # See header of grok.h above
     ** 'max_comp_size': 0,  # See header of grok.h above
 
+*Note: * when using the `blosc2_grok` plugin from C, the structure used
+for setting the parameters uses the `grok` parameters names. You can see an example
+in https://github.com/Blosc/leaps-examples/blob/main/c-compression/compress-tomo.c#L110 .
 
 ### codec_meta as rates quality mode
 
