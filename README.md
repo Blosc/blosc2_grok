@@ -110,6 +110,17 @@ cparams = {
 }
 ```
 
+## Notes
+
+When using `blosc2_grok`, there are some restrictions that you have
+to keep in mind.
+
+* The minimum supported image size is around 256 bytes, so an image with
+  less size will fail to be compressed.
+* The maximum datatype precision is of 16 bits.
+* Although floats from 16 or fewer bits of precision seem to work, we
+  recommend using integer data when possible.
+
 ## More examples
 
 See the [examples](examples/) directory for more examples.
