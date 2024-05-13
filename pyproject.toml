@@ -10,13 +10,6 @@
 requires = ["scikit-build-core", "blosc2"]
 build-backend = "scikit_build_core.build"
 
-[tool.cibuildwheel]
-# Build using the manylinux image to ensure manylinux_2_28 wheels are produced
-# grok needs at least GCC 11, and manylinux_2_28 is the first manylinux image
-# to include GCC 11 (actually, GCC 12)
-manylinux-x86_64-image = "manylinux_2_28"
-manylinux-aarch64-image = "manylinux_2_28"
-
 [project]
 name = "blosc2_grok"
 version = "0.3.4.dev0"
@@ -60,6 +53,11 @@ zip-safe = false
 
 [tool.cibuildwheel]
 skip = "*-manylinux_i686 *_ppc64le *_s390x *-musllinux*"
+# Build using the manylinux image to ensure manylinux_2_28 wheels are produced
+# grok needs at least GCC 11, and manylinux_2_28 is the first manylinux image
+# to include GCC 11 (actually, GCC 12)
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
 
 [tool.scikit-build]
 # Python ABI compatibility should not be a problem for Blosc plugins
