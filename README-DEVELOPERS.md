@@ -2,6 +2,16 @@
 
 For using blosc2_grok you will first have to create and install its wheel.
 
+
+## Download the repository
+
+```shell
+git clone https://github.com/Blosc/blosc2_grok.git
+cd blosc2_grok
+git submodule --init
+git submodule update
+```
+
 ## Create the wheel
 
 For Linux:
