@@ -48,5 +48,16 @@ else()
     message(FATAL_ERROR "No Blosc2 includes found.  Aborting.")
 endif()
 
+# Patch all CMake minimum version requirements in Grok and its dependencies
+file(GLOB_RECURSE ALL_CMAKE_FILES
+     "src/grok/**/CMakeLists.txt"
+     "src/grok/**/*.cmake")
+foreach(CMAKE_FILE ${ALL_CMAKE_FILES})
+    file(READ "${CMAKE_FILE}" FILE_CONTENT)
+    string(REGEX REPLACE "cmake_minimum_required\\(VERSION [0-9.]+\\)"
+           "cmake_minimum_required(VERSION 3.5...3.30)" FILE_CONTENT "${FILE_CONTENT}")
+    file(WRITE "${CMAKE_FILE}" "${FILE_CONTENT}")
+endforeach()
+
 include_directories("${BLOSC2_INCLUDE_DIR}")
 add_subdirectory(src)
