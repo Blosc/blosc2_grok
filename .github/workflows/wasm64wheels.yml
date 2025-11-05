@@ -1,0 +1,76 @@
+name: Python wheels for WASM
+on:
+  push:
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - main
+
+env:
+  CIBW_BUILD_VERBOSITY: 1
+  # In case you want to specify a version of pyodide
+  PYODIDE_VERSION: 0.28.3
+
+jobs:
+  build_wheels_wasm:
+    name: Build and test wheels for WASM on ${{ matrix.os }} for ${{ matrix.p_ver }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      CIBW_BEFORE_ALL: pip install -r requirements-test.txt
+      CIBW_BUILD: ${{ matrix.cibw_build }}
+      CMAKE_ARGS: "-DWITH_OPTIM=OFF"
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        cibw_build: ["cp312-*", "cp313-*", "cp314-*"]
+        p_ver: ["3.12-3.14"]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake
+
+      - name: Build wheels (cibuildwheel)
+        uses: pypa/cibuildwheel@v3
+        with:
+          platform: pyodide
+        env:
+          # pass through existing env values; CIBW_BUILD comes from matrix above
+          CIBW_BEFORE_ALL: ${{ env.CIBW_BEFORE_ALL }}
+          CIBW_BUILD: ${{ env.CIBW_BUILD }}
+          CMAKE_ARGS: ${{ env.CMAKE_ARGS }}
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v5
+        with:
+          name: wheels-wasm-${{ matrix.os }}-${{ matrix.p_ver }}
+          path: ./wheelhouse/*.whl
+
+# Local build example (unix shell):
+# python -m pip install -U cibuildwheel
+# export CIBW_BUILD="cp312-* cp313-* cp314-*"
+# export CIBW_BEFORE_ALL="pip install -r requirements-test.txt"
+# export CMAKE_ARGS="-DWITH_OPTIM=OFF"
+# python -m cibuildwheel --platform pyodide --output-dir ./wheelhouse .
+# Or as a one-liner:
+# CIBW_BUILD="cp312-* cp313-* cp314-*" CIBW_BEFORE_ALL="pip install -r requirements-test.txt" CMAKE_ARGS="-DWITH_OPTIM=OFF" python -m cibuildwheel --platform pyodide --output-dir ./wheelhouse .
+
+# This is not working yet
+#      - name: Upload wheel to release
+#        if: startsWith(github.ref, 'refs/tags/')
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          gh release upload ${GITHUB_REF_NAME} ./wheelhouse/*.whl
