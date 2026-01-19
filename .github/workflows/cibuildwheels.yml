@@ -80,6 +80,8 @@ jobs:
           CIBW_BEFORE_TEST: python3 -m pip install --upgrade pip && python3 -m pip install -r requirements-test.txt
           CIBW_TEST_COMMAND: >
             BLOSC_TRACE=1 python3 -m pytest {project}/tests
+          CIBW_REPAIR_WHEEL_COMMAND: >
+            python3 -c "import os,sysconfig,pathlib,subprocess; plat=sysconfig.get_path('platlib'); libdirs=[str(pathlib.Path(plat)/'lib'), str(pathlib.Path(plat)/'lib64')]; env=os.environ.copy(); extra=':'.join([d for d in libdirs if os.path.isdir(d)]); ld=env.get('LD_LIBRARY_PATH',''); env['LD_LIBRARY_PATH']=extra + ((':'+ld) if (ld and extra) else ld); subprocess.check_call(['auditwheel','repair','-w','{dest_dir}','{wheel}'], env=env)"
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
 
@@ -94,6 +96,8 @@ jobs:
           CIBW_BEFORE_TEST: python3 -m pip install --upgrade pip && python3 -m pip install -r requirements-test.txt
           CIBW_TEST_COMMAND: >
             BLOSC_TRACE=1 python3 -m pytest {project}/tests
+          CIBW_REPAIR_WHEEL_COMMAND: >
+            python3 -c "import sysconfig,pathlib,subprocess; plat=sysconfig.get_path('platlib'); libdirs=[pathlib.Path(plat)/'lib', pathlib.Path(plat)/'lib64']; args=['delocate-wheel','--require-archs','x86_64','-w','{dest_dir}','-v','{wheel}']; [args.extend(['--search-path', str(d)]) for d in libdirs if d.is_dir()]; subprocess.check_call(args)"
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
 
@@ -104,6 +108,8 @@ jobs:
           # The build requirements should be installed by the pyproject.toml specs
           CIBW_ENVIRONMENT: CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
           CIBW_BUILD: 'cp310-* cp311-* cp312-*'
+          CIBW_REPAIR_WHEEL_COMMAND: >
+            python3 -c "import os,sysconfig,pathlib,subprocess; plat=sysconfig.get_path('platlib'); libdirs=[str(pathlib.Path(plat)/'lib'), str(pathlib.Path(plat)/'lib64')]; env=os.environ.copy(); extra=':'.join([d for d in libdirs if os.path.isdir(d)]); ld=env.get('LD_LIBRARY_PATH',''); env['LD_LIBRARY_PATH']=extra + ((':'+ld) if (ld and extra) else ld); subprocess.check_call(['auditwheel','repair','-w','{dest_dir}','{wheel}'], env=env)"
           CIBW_ARCHS_LINUX: "aarch64"
 
       - name: Upload wheels
@@ -137,6 +143,8 @@ jobs:
           CIBW_BUILD: 'cp310-* cp311-* cp312-*'
           CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
           CIBW_ARCHS_MACOS: "arm64"
+          CIBW_REPAIR_WHEEL_COMMAND: >
+            python3 -c "import sysconfig,pathlib,subprocess; plat=sysconfig.get_path('platlib'); libdirs=[pathlib.Path(plat)/'lib', pathlib.Path(plat)/'lib64']; args=['delocate-wheel','--require-archs','arm64','-w','{dest_dir}','-v','{wheel}']; [args.extend(['--search-path', str(d)]) for d in libdirs if d.is_dir()]; subprocess.check_call(args)"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
