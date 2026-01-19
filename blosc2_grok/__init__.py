@@ -16,6 +16,19 @@ import numpy as np
 
 __version__ = "0.3.4.dev0"
 
+# On Windows, add blosc2 package directory to DLL search path
+if platform.system() == "Windows" and hasattr(os, 'add_dll_directory'):
+    try:
+        import blosc2
+        blosc2_dir = Path(blosc2.__file__).parent
+        os.add_dll_directory(str(blosc2_dir))
+        # Also add blosc2/lib if it exists (PEP 427 compliant wheel)
+        blosc2_lib = blosc2_dir / "lib"
+        if blosc2_lib.exists():
+            os.add_dll_directory(str(blosc2_lib))
+    except (ImportError, OSError):
+        pass
+
 
 class GrkFileFmt(Enum):
     """
