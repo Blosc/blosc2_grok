@@ -74,7 +74,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.5
         env:
           # The build requirements should be installed by the pyproject.toml specs
-          #CIBW_BEFORE_BUILD: python3 -m pip install --upgrade pip && python3 -m pip install -r requirements-build.txt
+          CIBW_BEFORE_BUILD: python3 -m pip install --upgrade pip && python3 -m pip install blosc2
           CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=x86_64 CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
           CIBW_BUILD: 'cp310-* cp311-* cp312-*'
           CIBW_BEFORE_TEST: python3 -m pip install --upgrade pip && python3 -m pip install -r requirements-test.txt
@@ -143,7 +143,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.5
         env:
           # The build requirements should be installed by the pyproject.toml specs
-          #CIBW_BEFORE_BUILD: python3 -m pip install --upgrade pip && python3 -m pip install -r requirements-build.txt
+          CIBW_BEFORE_BUILD: python3 -m pip install --upgrade pip && python3 -m pip install blosc2
           CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=x86_64 DONT_BUILD_EXAMPLES=1 CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
           CIBW_BUILD: 'cp310-* cp311-* cp312-*'
           CIBW_BEFORE_TEST: python3 -m pip install --upgrade pip && python3 -m pip install -r requirements-test.txt
@@ -227,6 +227,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.5
         env:
           # The build requirements should be installed by the pyproject.toml specs
+          CIBW_BEFORE_BUILD: python3 -m pip install --upgrade pip && python3 -m pip install blosc2
           CIBW_ENVIRONMENT: CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5" DONT_BUILD_EXAMPLES=1
           CIBW_BUILD: 'cp310-* cp311-* cp312-*'
           CIBW_REPAIR_WHEEL_COMMAND: |
@@ -313,6 +314,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.5
         env:
           # The build requirements should be installed by the pyproject.toml specs
+          CIBW_BEFORE_BUILD: python3 -m pip install --upgrade pip && python3 -m pip install blosc2
           CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
           CIBW_BUILD: 'cp310-* cp311-* cp312-*'
           CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
