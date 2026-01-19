@@ -84,15 +84,44 @@ install(TARGETS blosc2_grok
 )
 install(FILES blosc2_grok.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT DEV)
 
-# Install libblosc2 dylib on macOS so delocate can bundle it
+# Bundle libblosc2 library for wheel repair
 if(APPLE AND BLOSC2_LIBRARY)
+    # macOS: Install dylibs to .dylibs directory
     get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
-    # Find and install all libblosc2 dylib files (including versioned ones)
     file(GLOB BLOSC2_DYLIBS "${BLOSC2_LIB_DIR}/libblosc2*.dylib")
     foreach(DYLIB ${BLOSC2_DYLIBS})
         get_filename_component(DYLIB_REALPATH "${DYLIB}" REALPATH)
         install(FILES "${DYLIB_REALPATH}" DESTINATION blosc2_grok/.dylibs)
     endforeach()
+elseif(WIN32 AND BLOSC2_LIBRARY)
+    # Windows: Install DLL to same directory as plugin
+    get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
+    # Search common locations for blosc2.dll
+    set(_blosc2_dll_patterns
+        "${BLOSC2_LIB_DIR}/../bin/blosc2.dll"
+        "${BLOSC2_LIB_DIR}/blosc2.dll"
+        "${BLOSC2_LIB_DIR}/../Scripts/blosc2.dll"
+        "${BLOSC2_LIB_DIR}/../../Scripts/blosc2.dll"
+    )
+    set(_found_blosc2_dll FALSE)
+    foreach(DLL_PATTERN ${_blosc2_dll_patterns})
+        file(GLOB BLOSC2_DLLS "${DLL_PATTERN}")
+        foreach(DLL ${BLOSC2_DLLS})
+            if(EXISTS "${DLL}")
+                get_filename_component(DLL_REALPATH "${DLL}" REALPATH)
+                install(FILES "${DLL_REALPATH}" DESTINATION blosc2_grok)
+                message(STATUS "Will install blosc2 DLL: ${DLL_REALPATH}")
+                set(_found_blosc2_dll TRUE)
+                break()
+            endif()
+        endforeach()
+        if(_found_blosc2_dll)
+            break()
+        endif()
+    endforeach()
+    if(NOT _found_blosc2_dll)
+        message(WARNING "blosc2.dll not found - wheel may not work on Windows without blosc2 installed")
+    endif()
 endif()
 
 # Test program

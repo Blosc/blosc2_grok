@@ -16,6 +16,25 @@ import numpy as np
 
 __version__ = "0.3.4.dev0"
 
+# On Windows, pre-load blosc2.dll if bundled with the wheel
+if platform.system() == "Windows":
+    _blosc2_dll_path = Path(__file__).parent / "blosc2.dll"
+    if _blosc2_dll_path.exists():
+        # Pre-load blosc2.dll so blosc2_grok.dll can find it
+        ctypes.CDLL(str(_blosc2_dll_path))
+    else:
+        # Try to load from blosc2 package
+        try:
+            import blosc2
+            _blosc2_dir = Path(blosc2.__file__).parent
+            for dll_name in ["blosc2.dll", "libblosc2.dll"]:
+                _dll_path = _blosc2_dir / dll_name
+                if _dll_path.exists():
+                    ctypes.CDLL(str(_dll_path))
+                    break
+        except (ImportError, OSError):
+            pass
+
 
 class GrkFileFmt(Enum):
     """

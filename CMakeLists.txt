@@ -189,6 +189,8 @@ if(NOT BLOSC2_LIBRARY)
             "${_libdir}/libblosc2*.so*"
             "${_libdir}/libblosc2*.dylib"
             "${_libdir}/libblosc2*.a"
+            "${_libdir}/blosc2.lib"
+            "${_libdir}/libblosc2*.lib"
         )
         list(APPEND _blosc2_libs ${_found_libs})
     endforeach()
