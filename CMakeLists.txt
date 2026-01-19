@@ -24,188 +24,62 @@ if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
     endif()
 endif()
 
-# Find blosc2.h
+# Find blosc2.h and libblosc2
 find_package(Python COMPONENTS Interpreter NumPy Development.Module REQUIRED)
 message(STATUS "Executable: ${Python_EXECUTABLE}")
 message(STATUS "NumPy found: ${Python_NumPy_FOUND}")
 message(STATUS "NumPy version: ${Python_NumPy_VERSION}")
 message(STATUS "Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
 
-set(HAS_BLOSC2 FALSE)
-set(_blosc2_include_candidates "")
-if(DEFINED BLOSC2_INCLUDE_DIR)
-    list(APPEND _blosc2_include_candidates "${BLOSC2_INCLUDE_DIR}")
-endif()
-
-if (UNIX)
-    cmake_path(SET Python_ROOT NORMALIZE "${Python_NumPy_INCLUDE_DIRS}/../../../../../..")
-else()
-    cmake_path(SET Python_ROOT NORMALIZE "${Python_NumPy_INCLUDE_DIRS}/../../../../..")
-endif()
-cmake_path(SET Python_INCLUDE NORMALIZE "${Python_ROOT}/include")
-message(STATUS "Found Python include: ${Python_INCLUDE}")
-cmake_path(SET Python_LIB NORMALIZE "${Python_ROOT}/lib")
-cmake_path(SET Python_LIB64 NORMALIZE "${Python_ROOT}/lib64")
-
-# Prefer site-packages/include derived from NumPy's include location.
-foreach(_numpy_inc IN LISTS Python_NumPy_INCLUDE_DIRS)
-    if(_numpy_inc)
-        cmake_path(SET _numpy_site_packages NORMALIZE "${_numpy_inc}/../../..")
-        cmake_path(SET _numpy_site_include NORMALIZE "${_numpy_site_packages}/include")
-        list(APPEND _blosc2_include_candidates "${_numpy_site_include}")
-    endif()
-endforeach()
-
-# Fall back to the Python include dir in case blosc2 headers were installed there.
-list(APPEND _blosc2_include_candidates "${Python_INCLUDE}")
-
-# Additional fallback: ask Python for site-packages paths.
+# Find blosc2 package location using Python
 execute_process(
-    COMMAND "${Python_EXECUTABLE}" -c [=[
-import sysconfig
-import site
-import pathlib
-
-paths = []
-for p in (sysconfig.get_path("platlib"), sysconfig.get_path("purelib")):
-    if p:
-        paths.append(p)
-if hasattr(site, "getsitepackages"):
-    for p in site.getsitepackages():
-        if p:
-            paths.append(p)
-
-seen = set()
-unique_paths = []
-for p in paths:
-    if p not in seen:
-        seen.add(p)
-        unique_paths.append(p)
-
-print(";".join(str(pathlib.Path(p) / "include") for p in unique_paths))
-]=]
-    OUTPUT_VARIABLE BLOSC2_INCLUDE_CANDIDATES
+    COMMAND "${Python_EXECUTABLE}" -c "import blosc2, pathlib; print(pathlib.Path(blosc2.__file__).parent)"
+    OUTPUT_VARIABLE BLOSC2_PACKAGE_DIR
     OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE BLOSC2_IMPORT_RESULT
 )
-foreach(_candidate ${BLOSC2_INCLUDE_CANDIDATES})
-    if(_candidate)
-        list(APPEND _blosc2_include_candidates "${_candidate}")
+
+if(BLOSC2_IMPORT_RESULT EQUAL 0 AND EXISTS "${BLOSC2_PACKAGE_DIR}")
+    message(STATUS "Found blosc2 package at: ${BLOSC2_PACKAGE_DIR}")
+    
+    # Try PEP 427 compliant structure first (blosc2/include/)
+    set(BLOSC2_INCLUDE_DIR "${BLOSC2_PACKAGE_DIR}/include")
+    if(NOT EXISTS "${BLOSC2_INCLUDE_DIR}/blosc2.h")
+        # Fall back to site-packages/include/ (old structure)
+        get_filename_component(SITE_PACKAGES "${BLOSC2_PACKAGE_DIR}" DIRECTORY)
+        set(BLOSC2_INCLUDE_DIR "${SITE_PACKAGES}/include")
     endif()
-endforeach()
-
-list(REMOVE_DUPLICATES _blosc2_include_candidates)
-
-find_path(BLOSC2_INCLUDE_DIR
-    NAMES blosc2.h
-    PATHS ${_blosc2_include_candidates}
-    NO_DEFAULT_PATH
-)
-
-if(BLOSC2_INCLUDE_DIR)
-    set(HAS_BLOSC2 TRUE)
-    message(STATUS "Found Blosc2 include: ${BLOSC2_INCLUDE_DIR}/blosc2.h")
-else()
-    message(FATAL_ERROR "No Blosc2 includes found.  Aborting.")
-endif()
-
-set(BLOSC2_LIBRARY_DIRS "")
-if(DEFINED BLOSC2_LIBRARY_DIR)
-    if(EXISTS "${BLOSC2_LIBRARY_DIR}")
-        list(APPEND BLOSC2_LIBRARY_DIRS "${BLOSC2_LIBRARY_DIR}")
-        message(STATUS "Using BLOSC2_LIBRARY_DIR: ${BLOSC2_LIBRARY_DIR}")
+    
+    if(EXISTS "${BLOSC2_INCLUDE_DIR}/blosc2.h")
+        message(STATUS "Found Blosc2 include: ${BLOSC2_INCLUDE_DIR}/blosc2.h")
     else()
-        message(WARNING "BLOSC2_LIBRARY_DIR set but directory not found: ${BLOSC2_LIBRARY_DIR}")
+        message(FATAL_ERROR "blosc2 package found but blosc2.h not found. Tried:\n  ${BLOSC2_PACKAGE_DIR}/include\n  ${SITE_PACKAGES}/include")
     endif()
-endif()
-
-# Derive site-packages/lib from NumPy include.
-foreach(_numpy_inc IN LISTS Python_NumPy_INCLUDE_DIRS)
-    if(_numpy_inc)
-        cmake_path(SET _numpy_site_packages NORMALIZE "${_numpy_inc}/../../..")
-        cmake_path(SET _numpy_site_lib NORMALIZE "${_numpy_site_packages}/lib")
-        cmake_path(SET _numpy_site_lib64 NORMALIZE "${_numpy_site_packages}/lib64")
-        list(APPEND BLOSC2_LIBRARY_DIRS "${_numpy_site_lib}" "${_numpy_site_lib64}")
+    
+    # Try PEP 427 compliant structure first (blosc2/lib/)
+    set(BLOSC2_LIB_DIR "${BLOSC2_PACKAGE_DIR}/lib")
+    if(NOT EXISTS "${BLOSC2_LIB_DIR}")
+        # Fall back to site-packages/lib/ (old structure)
+        get_filename_component(SITE_PACKAGES "${BLOSC2_PACKAGE_DIR}" DIRECTORY)
+        set(BLOSC2_LIB_DIR "${SITE_PACKAGES}/lib")
     endif()
-endforeach()
-
-# Add Python's lib dirs.
-list(APPEND BLOSC2_LIBRARY_DIRS "${Python_LIB}" "${Python_LIB64}")
-
-# Add site-packages/lib from Python sysconfig as fallback.
-execute_process(
-    COMMAND "${Python_EXECUTABLE}" -c [=[
-import sysconfig
-import site
-import pathlib
-
-paths = []
-for p in (sysconfig.get_path("platlib"), sysconfig.get_path("purelib")):
-    if p:
-        paths.append(p)
-if hasattr(site, "getsitepackages"):
-    for p in site.getsitepackages():
-        if p:
-            paths.append(p)
-
-seen = set()
-unique_paths = []
-for p in paths:
-    if p not in seen:
-        seen.add(p)
-        unique_paths.append(p)
-
-print(";".join(str(pathlib.Path(p) / "lib") for p in unique_paths))
-]=]
-    OUTPUT_VARIABLE BLOSC2_LIBRARY_CANDIDATES
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-foreach(_candidate ${BLOSC2_LIBRARY_CANDIDATES})
-    if(_candidate)
-        list(APPEND BLOSC2_LIBRARY_DIRS "${_candidate}")
-    endif()
-endforeach()
-
-list(REMOVE_DUPLICATES BLOSC2_LIBRARY_DIRS)
-
-if(DEFINED BLOSC2_LIBRARY)
-    if(EXISTS "${BLOSC2_LIBRARY}")
-        message(STATUS "Using BLOSC2_LIBRARY: ${BLOSC2_LIBRARY}")
-    else()
-        message(WARNING "BLOSC2_LIBRARY set but file not found: ${BLOSC2_LIBRARY}")
-        unset(BLOSC2_LIBRARY)
-    endif()
-endif()
-if(NOT DEFINED BLOSC2_LIBRARY)
+    
     find_library(BLOSC2_LIBRARY
         NAMES blosc2 libblosc2
-        PATHS ${BLOSC2_LIBRARY_DIRS}
+        PATHS "${BLOSC2_LIB_DIR}"
         NO_DEFAULT_PATH
     )
-endif()
-if(NOT BLOSC2_LIBRARY)
-    set(_blosc2_libs "")
-    foreach(_libdir ${BLOSC2_LIBRARY_DIRS})
-        file(GLOB _found_libs
-            "${_libdir}/libblosc2*.so*"
-            "${_libdir}/libblosc2*.dylib"
-            "${_libdir}/libblosc2*.a"
-            "${_libdir}/blosc2.lib"
-            "${_libdir}/libblosc2*.lib"
-        )
-        list(APPEND _blosc2_libs ${_found_libs})
-    endforeach()
-    if(_blosc2_libs)
-        list(SORT _blosc2_libs)
-        list(GET _blosc2_libs 0 BLOSC2_LIBRARY)
+    
+    if(BLOSC2_LIBRARY)
+        message(STATUS "Found Blosc2 library: ${BLOSC2_LIBRARY}")
+        set(BLOSC2_LIBRARIES "${BLOSC2_LIBRARY}")
+        get_filename_component(BLOSC2_LIBRARY_DIR_RESOLVED "${BLOSC2_LIBRARY}" DIRECTORY)
+    else()
+        message(WARNING "Blosc2 library not found in ${BLOSC2_LIB_DIR}; linking may fail.")
+        set(BLOSC2_LIBRARIES "blosc2")
     endif()
-endif()
-if(BLOSC2_LIBRARY)
-    message(STATUS "Found Blosc2 library: ${BLOSC2_LIBRARY}")
-    set(BLOSC2_LIBRARIES "${BLOSC2_LIBRARY}")
-    get_filename_component(BLOSC2_LIBRARY_DIR_RESOLVED "${BLOSC2_LIBRARY}" DIRECTORY)
 else()
-    message(WARNING "Blosc2 library not found; linking may fail.")
-    set(BLOSC2_LIBRARIES "blosc2")
+    message(FATAL_ERROR "Could not import blosc2 package. Please install it first: pip install blosc2")
 endif()
 
 include_directories("${BLOSC2_INCLUDE_DIR}")

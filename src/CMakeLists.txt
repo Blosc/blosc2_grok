@@ -62,12 +62,12 @@ include_directories(
 )
 
 target_link_libraries(blosc2_grok grokj2k ${BLOSC2_LIBRARIES})
+
+# Set RPATH for locating libblosc2 at runtime
 if(DEFINED BLOSC2_LIBRARY_DIR_RESOLVED)
-    # Ensure repair tools can locate libblosc2 via embedded rpath.
     set_target_properties(blosc2_grok PROPERTIES
         BUILD_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
     )
-    # Set platform-specific INSTALL_RPATH
     if(APPLE)
         set_target_properties(blosc2_grok PROPERTIES
             INSTALL_RPATH "@loader_path/.dylibs"
@@ -86,16 +86,11 @@ endif (UNIX AND NOT APPLE)
 
 
 # Install
-install(TARGETS blosc2_grok
-    LIBRARY DESTINATION blosc2_grok
-    RUNTIME DESTINATION blosc2_grok
-    ARCHIVE DESTINATION blosc2_grok
-)
+install(TARGETS blosc2_grok LIBRARY DESTINATION blosc2_grok)
 install(FILES blosc2_grok.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT DEV)
 
 # Bundle libblosc2 library for wheel repair
 if(APPLE AND BLOSC2_LIBRARY)
-    # macOS: Install dylibs to .dylibs directory
     get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
     file(GLOB BLOSC2_DYLIBS "${BLOSC2_LIB_DIR}/libblosc2*.dylib")
     foreach(DYLIB ${BLOSC2_DYLIBS})
@@ -103,80 +98,14 @@ if(APPLE AND BLOSC2_LIBRARY)
         install(FILES "${DYLIB_REALPATH}" DESTINATION blosc2_grok/.dylibs)
     endforeach()
 elseif(UNIX AND NOT APPLE AND BLOSC2_LIBRARY)
-    # Linux: Install shared libraries to .libs directory for auditwheel
     get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
     file(GLOB BLOSC2_SOS "${BLOSC2_LIB_DIR}/libblosc2.so*")
     foreach(SO ${BLOSC2_SOS})
         if(EXISTS "${SO}")
             get_filename_component(SO_REALPATH "${SO}" REALPATH)
             install(FILES "${SO_REALPATH}" DESTINATION blosc2_grok/.libs)
-            message(STATUS "Will install blosc2 SO: ${SO_REALPATH}")
         endif()
     endforeach()
-elseif(WIN32 AND BLOSC2_LIBRARY)
-    # Windows: Install DLL to same directory as plugin
-    get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
-    message(STATUS "Windows: BLOSC2_LIBRARY = ${BLOSC2_LIBRARY}")
-    message(STATUS "Windows: BLOSC2_LIB_DIR = ${BLOSC2_LIB_DIR}")
-    
-    # Search common locations for blosc2.dll
-    # Note: BLOSC2_LIBRARY points to the .lib file, we need to find the .dll
-    set(_blosc2_dll_patterns
-        # Common conda/system install locations
-        "${BLOSC2_LIB_DIR}/../bin/blosc2.dll"
-        "${BLOSC2_LIB_DIR}/../Library/bin/blosc2.dll"
-        # Pip wheel install locations (site-packages structure)
-        "${BLOSC2_LIB_DIR}/blosc2.dll"
-        "${BLOSC2_LIB_DIR}/../Scripts/blosc2.dll"
-        "${BLOSC2_LIB_DIR}/../../Scripts/blosc2.dll"
-        # Try to find via Python import (for pip-installed blosc2)
-        "${BLOSC2_LIB_DIR}/../../../blosc2/blosc2.dll"
-        "${BLOSC2_LIB_DIR}/../../blosc2.dll"
-    )
-    
-    message(STATUS "Windows: Searching for blosc2.dll in patterns:")
-    foreach(PATTERN ${_blosc2_dll_patterns})
-        message(STATUS "  ${PATTERN}")
-    endforeach()
-    
-    set(_found_blosc2_dll FALSE)
-    foreach(DLL_PATTERN ${_blosc2_dll_patterns})
-        file(GLOB BLOSC2_DLLS "${DLL_PATTERN}")
-        foreach(DLL ${BLOSC2_DLLS})
-            if(EXISTS "${DLL}")
-                get_filename_component(DLL_REALPATH "${DLL}" REALPATH)
-                install(FILES "${DLL_REALPATH}" DESTINATION blosc2_grok)
-                message(STATUS "Will install blosc2 DLL: ${DLL_REALPATH}")
-                set(_found_blosc2_dll TRUE)
-                break()
-            endif()
-        endforeach()
-        if(_found_blosc2_dll)
-            break()
-        endif()
-    endforeach()
-    
-    # If still not found, try to find it via Python
-    if(NOT _found_blosc2_dll)
-        message(STATUS "Windows: Trying to find blosc2.dll via Python import...")
-        execute_process(
-            COMMAND "${Python_EXECUTABLE}" -c "import blosc2, pathlib; print(pathlib.Path(blosc2.__file__).parent / 'blosc2.dll')"
-            OUTPUT_VARIABLE _blosc2_dll_from_python
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-        )
-        message(STATUS "Windows: Python returned: ${_blosc2_dll_from_python}")
-        if(_blosc2_dll_from_python AND EXISTS "${_blosc2_dll_from_python}")
-            get_filename_component(DLL_REALPATH "${_blosc2_dll_from_python}" REALPATH)
-            install(FILES "${DLL_REALPATH}" DESTINATION blosc2_grok)
-            message(STATUS "Will install blosc2 DLL (via Python): ${DLL_REALPATH}")
-            set(_found_blosc2_dll TRUE)
-        endif()
-    endif()
-    
-    if(NOT _found_blosc2_dll)
-        message(WARNING "blosc2.dll not found - wheel may not work on Windows without blosc2 installed")
-    endif()
 endif()
 
 # Test program
