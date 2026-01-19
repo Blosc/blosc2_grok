@@ -66,7 +66,7 @@ if(DEFINED BLOSC2_LIBRARY_DIR_RESOLVED)
     # Ensure repair tools can locate libblosc2 via embedded rpath.
     set_target_properties(blosc2_grok PROPERTIES
         BUILD_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
-        INSTALL_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
+        INSTALL_RPATH "@loader_path/.dylibs"
     )
 endif()
 
@@ -83,6 +83,17 @@ install(TARGETS blosc2_grok
     ARCHIVE DESTINATION blosc2_grok
 )
 install(FILES blosc2_grok.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT DEV)
+
+# Install libblosc2 dylib on macOS so delocate can bundle it
+if(APPLE AND BLOSC2_LIBRARY)
+    get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
+    # Find and install all libblosc2 dylib files (including versioned ones)
+    file(GLOB BLOSC2_DYLIBS "${BLOSC2_LIB_DIR}/libblosc2*.dylib")
+    foreach(DYLIB ${BLOSC2_DYLIBS})
+        get_filename_component(DYLIB_REALPATH "${DYLIB}" REALPATH)
+        install(FILES "${DYLIB_REALPATH}" DESTINATION blosc2_grok/.dylibs)
+    endforeach()
+endif()
 
 # Test program
 if(NOT DEFINED ENV{DONT_BUILD_EXAMPLES})
