@@ -70,6 +70,8 @@ jobs:
           CIBW_BEFORE_BUILD: python3 -m pip install --upgrade pip && python3 -m pip install blosc2
           CIBW_ENVIRONMENT: CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5" DONT_BUILD_EXAMPLES=1
           CIBW_BUILD: 'cp312-* cp313-* cp314-*'
+          CIBW_BEFORE_TEST: python3 -m pip install --upgrade pip && python3 -m pip install -r requirements-test.txt
+          CIBW_TEST_COMMAND: BLOSC_TRACE=1 python3 -m pytest {project}/tests
           CIBW_ARCHS_LINUX: aarch64
 
       - name: Upload wheels
@@ -101,7 +103,8 @@ jobs:
           CIBW_BEFORE_BUILD: python3 -m pip install --upgrade pip && python3 -m pip install blosc2
           CIBW_ENVIRONMENT: CMAKE_OSX_ARCHITECTURES=arm64 CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
           CIBW_BUILD: 'cp312-* cp313-* cp314-*'
-          CIBW_TEST_SKIP: "*macosx*arm64*"
+          CIBW_BEFORE_TEST: python3 -m pip install --upgrade pip && python3 -m pip install -r requirements-test.txt
+          CIBW_TEST_COMMAND: BLOSC_TRACE=1 python3 -m pytest {project}/tests
           CIBW_ARCHS_MACOS: arm64
 
       - name: Upload wheels
