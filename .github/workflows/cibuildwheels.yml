@@ -106,7 +106,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.5
         env:
           # The build requirements should be installed by the pyproject.toml specs
-          CIBW_ENVIRONMENT: CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+          CIBW_ENVIRONMENT: CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5" DONT_BUILD_EXAMPLES=1
           CIBW_BUILD: 'cp310-* cp311-* cp312-*'
           CIBW_REPAIR_WHEEL_COMMAND: >
             python3 -c "import os,sysconfig,pathlib,subprocess; plat=sysconfig.get_path('platlib'); libdirs=[str(pathlib.Path(plat)/'lib'), str(pathlib.Path(plat)/'lib64')]; env=os.environ.copy(); extra=':'.join([d for d in libdirs if os.path.isdir(d)]); ld=env.get('LD_LIBRARY_PATH',''); env['LD_LIBRARY_PATH']=extra + ((':'+ld) if (ld and extra) else ld); subprocess.check_call(['auditwheel','repair','-w','{dest_dir}','{wheel}'], env=env)"
