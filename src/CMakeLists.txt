@@ -116,6 +116,8 @@ elseif(UNIX AND NOT APPLE AND BLOSC2_LIBRARY)
 elseif(WIN32 AND BLOSC2_LIBRARY)
     # Windows: Install DLL to same directory as plugin
     get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
+    message(STATUS "Windows: BLOSC2_LIBRARY = ${BLOSC2_LIBRARY}")
+    message(STATUS "Windows: BLOSC2_LIB_DIR = ${BLOSC2_LIB_DIR}")
     
     # Search common locations for blosc2.dll
     # Note: BLOSC2_LIBRARY points to the .lib file, we need to find the .dll
@@ -131,6 +133,11 @@ elseif(WIN32 AND BLOSC2_LIBRARY)
         "${BLOSC2_LIB_DIR}/../../../blosc2/blosc2.dll"
         "${BLOSC2_LIB_DIR}/../../blosc2.dll"
     )
+    
+    message(STATUS "Windows: Searching for blosc2.dll in patterns:")
+    foreach(PATTERN ${_blosc2_dll_patterns})
+        message(STATUS "  ${PATTERN}")
+    endforeach()
     
     set(_found_blosc2_dll FALSE)
     foreach(DLL_PATTERN ${_blosc2_dll_patterns})
@@ -151,12 +158,14 @@ elseif(WIN32 AND BLOSC2_LIBRARY)
     
     # If still not found, try to find it via Python
     if(NOT _found_blosc2_dll)
+        message(STATUS "Windows: Trying to find blosc2.dll via Python import...")
         execute_process(
             COMMAND "${Python_EXECUTABLE}" -c "import blosc2, pathlib; print(pathlib.Path(blosc2.__file__).parent / 'blosc2.dll')"
             OUTPUT_VARIABLE _blosc2_dll_from_python
             OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_QUIET
         )
+        message(STATUS "Windows: Python returned: ${_blosc2_dll_from_python}")
         if(_blosc2_dll_from_python AND EXISTS "${_blosc2_dll_from_python}")
             get_filename_component(DLL_REALPATH "${_blosc2_dll_from_python}" REALPATH)
             install(FILES "${DLL_REALPATH}" DESTINATION blosc2_grok)

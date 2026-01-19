@@ -21,25 +21,42 @@ if platform.system() == "Windows":
     import sys
     _this_dir = Path(__file__).parent
     
+    # Debug: List files in the package directory
+    if os.getenv("BLOSC_TRACE"):
+        print(f"[DEBUG] blosc2_grok package directory: {_this_dir}", file=sys.stderr)
+        print(f"[DEBUG] Files in package directory:", file=sys.stderr)
+        for f in _this_dir.iterdir():
+            print(f"  {f.name}", file=sys.stderr)
+    
     # Try to load blosc2.dll from the wheel first
     _blosc2_dll_path = _this_dir / "blosc2.dll"
     if _blosc2_dll_path.exists():
         try:
+            if os.getenv("BLOSC_TRACE"):
+                print(f"[DEBUG] Loading bundled blosc2.dll from: {_blosc2_dll_path}", file=sys.stderr)
             # Pre-load blosc2.dll so blosc2_grok.dll can find it
             ctypes.CDLL(str(_blosc2_dll_path))
+            if os.getenv("BLOSC_TRACE"):
+                print(f"[DEBUG] Successfully loaded bundled blosc2.dll", file=sys.stderr)
         except OSError as e:
             print(f"Warning: Failed to load bundled blosc2.dll: {e}", file=sys.stderr)
     else:
+        if os.getenv("BLOSC_TRACE"):
+            print(f"[DEBUG] No bundled blosc2.dll found at: {_blosc2_dll_path}", file=sys.stderr)
         # Try to load from blosc2 package or add its directory to DLL search path
         try:
             import blosc2
             _blosc2_dir = Path(blosc2.__file__).parent
+            if os.getenv("BLOSC_TRACE"):
+                print(f"[DEBUG] Found blosc2 package at: {_blosc2_dir}", file=sys.stderr)
             
             # Try to load the DLL
             for dll_name in ["blosc2.dll", "libblosc2.dll"]:
                 _dll_path = _blosc2_dir / dll_name
                 if _dll_path.exists():
                     try:
+                        if os.getenv("BLOSC_TRACE"):
+                            print(f"[DEBUG] Loading {dll_name} from blosc2 package", file=sys.stderr)
                         ctypes.CDLL(str(_dll_path))
                         break
                     except OSError:
@@ -51,8 +68,9 @@ if platform.system() == "Windows":
                     os.add_dll_directory(str(_blosc2_dir))
                 except (OSError, FileNotFoundError):
                     pass
-        except (ImportError, OSError):
-            pass
+        except (ImportError, OSError) as e:
+            if os.getenv("BLOSC_TRACE"):
+                print(f"[DEBUG] Failed to load from blosc2 package: {e}", file=sys.stderr)
     
     # Add current directory to DLL search path for blosc2_grok.dll dependencies
     if hasattr(os, 'add_dll_directory'):
