@@ -16,16 +16,32 @@ import numpy as np
 
 __version__ = "0.3.4.dev0"
 
-# On Windows, add blosc2 package directory to DLL search path
-if platform.system() == "Windows" and hasattr(os, 'add_dll_directory'):
+# On Windows, pre-load blosc2.dll before loading blosc2_grok.dll
+if platform.system() == "Windows":
     try:
         import blosc2
         blosc2_dir = Path(blosc2.__file__).parent
-        os.add_dll_directory(str(blosc2_dir))
-        # Also add blosc2/lib if it exists (PEP 427 compliant wheel)
-        blosc2_lib = blosc2_dir / "lib"
-        if blosc2_lib.exists():
-            os.add_dll_directory(str(blosc2_lib))
+        
+        # Add blosc2 directories to DLL search path
+        if hasattr(os, 'add_dll_directory'):
+            os.add_dll_directory(str(blosc2_dir))
+            # Also add blosc2/lib if it exists (PEP 427 compliant wheel)
+            blosc2_lib = blosc2_dir / "lib"
+            if blosc2_lib.exists():
+                os.add_dll_directory(str(blosc2_lib))
+        
+        # Pre-load blosc2 DLL to ensure it's available for blosc2_grok.dll
+        # Try common locations and names
+        for dll_name in ['blosc2.dll', 'libblosc2.dll']:
+            dll_path = blosc2_dir / dll_name
+            if dll_path.exists():
+                ctypes.CDLL(str(dll_path))
+                break
+            # Also try in lib subdirectory
+            dll_path = blosc2_dir / 'lib' / dll_name
+            if dll_path.exists():
+                ctypes.CDLL(str(dll_path))
+                break
     except (ImportError, OSError):
         pass
 
