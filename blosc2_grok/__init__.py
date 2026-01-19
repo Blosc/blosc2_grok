@@ -21,24 +21,42 @@ if platform.system() == "Windows":
     try:
         import blosc2
         blosc2_dir = Path(blosc2.__file__).parent
+        site_packages = blosc2_dir.parent  # site-packages directory
         
-        # Add blosc2 directories to DLL search path
+        # Add directories to DLL search path
         if hasattr(os, 'add_dll_directory'):
-            os.add_dll_directory(str(blosc2_dir))
-            # Also add blosc2/lib if it exists (PEP 427 compliant wheel)
+            # PEP 427 compliant: blosc2/lib/
             blosc2_lib = blosc2_dir / "lib"
             if blosc2_lib.exists():
                 os.add_dll_directory(str(blosc2_lib))
+            
+            # Legacy (non-PEP 427): site-packages/lib/
+            legacy_lib = site_packages / "lib"
+            if legacy_lib.exists():
+                os.add_dll_directory(str(legacy_lib))
+            
+            # Also add site-packages itself for legacy DLLs
+            os.add_dll_directory(str(site_packages))
         
-        # Pre-load blosc2 DLL to ensure it's available for blosc2_grok.dll
-        # Try common locations and names
+        # Pre-load blosc2 DLL - try all possible locations
         for dll_name in ['blosc2.dll', 'libblosc2.dll']:
+            # PEP 427 compliant: blosc2/blosc2.dll
             dll_path = blosc2_dir / dll_name
             if dll_path.exists():
                 ctypes.CDLL(str(dll_path))
                 break
-            # Also try in lib subdirectory
+            # PEP 427 compliant: blosc2/lib/blosc2.dll
             dll_path = blosc2_dir / 'lib' / dll_name
+            if dll_path.exists():
+                ctypes.CDLL(str(dll_path))
+                break
+            # Legacy: site-packages/blosc2.dll
+            dll_path = site_packages / dll_name
+            if dll_path.exists():
+                ctypes.CDLL(str(dll_path))
+                break
+            # Legacy: site-packages/lib/blosc2.dll
+            dll_path = site_packages / 'lib' / dll_name
             if dll_path.exists():
                 ctypes.CDLL(str(dll_path))
                 break
