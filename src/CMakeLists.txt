@@ -62,6 +62,13 @@ include_directories(
 )
 
 target_link_libraries(blosc2_grok grokj2k ${BLOSC2_LIBRARIES})
+if(DEFINED BLOSC2_LIBRARY_DIR_RESOLVED)
+    # Ensure repair tools can locate libblosc2 via embedded rpath.
+    set_target_properties(blosc2_grok PROPERTIES
+        BUILD_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
+        INSTALL_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
+    )
+endif()
 
 link_directories(${Python_LIB})
 if (UNIX AND NOT APPLE)
@@ -84,6 +91,16 @@ if(NOT DEFINED ENV{DONT_BUILD_EXAMPLES})
     else()
         target_link_libraries(test_grok ${BLOSC2_LIBRARIES} grokj2k m)
         target_link_libraries(roundtrip ${BLOSC2_LIBRARIES} grokj2k m)
+    endif()
+    if(DEFINED BLOSC2_LIBRARY_DIR_RESOLVED)
+        set_target_properties(test_grok PROPERTIES
+            BUILD_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
+            INSTALL_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
+        )
+        set_target_properties(roundtrip PROPERTIES
+            BUILD_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
+            INSTALL_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
+        )
     endif()
 else()
     message(STATUS "DONT_BUILD_EXAMPLES set")

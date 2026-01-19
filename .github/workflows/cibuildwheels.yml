@@ -81,7 +81,7 @@ jobs:
           CIBW_TEST_COMMAND: >
             BLOSC_TRACE=1 python3 -m pytest {project}/tests
           CIBW_REPAIR_WHEEL_COMMAND: >
-            python3 -c "import os,sysconfig,pathlib,subprocess; plat=sysconfig.get_path('platlib'); libdirs=[str(pathlib.Path(plat)/'lib'), str(pathlib.Path(plat)/'lib64')]; env=os.environ.copy(); extra=':'.join([d for d in libdirs if os.path.isdir(d)]); ld=env.get('LD_LIBRARY_PATH',''); env['LD_LIBRARY_PATH']=extra + ((':'+ld) if (ld and extra) else ld); subprocess.check_call(['auditwheel','repair','-w','{dest_dir}','{wheel}'], env=env)"
+            python3 -c "import glob,os,subprocess,sys; patterns=['/tmp/pip-build-env-*/overlay/**/libblosc2*.so*','/opt/python/**/site-packages/**/libblosc2*.so*']; libs=[]; [libs.extend(glob.glob(p, recursive=True)) for p in patterns]; libdir='';\nfor p in libs:\n    if os.path.isfile(p):\n        libdir=os.path.dirname(p); break\nif not libdir:\n    sys.exit('libblosc2 so not found');\nenv=os.environ.copy(); ld=env.get('LD_LIBRARY_PATH',''); env['LD_LIBRARY_PATH']=libdir + ((':'+ld) if ld else ''); subprocess.check_call(['auditwheel','repair','-w','{dest_dir}','{wheel}'], env=env)"
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
 
@@ -97,7 +97,7 @@ jobs:
           CIBW_TEST_COMMAND: >
             BLOSC_TRACE=1 python3 -m pytest {project}/tests
           CIBW_REPAIR_WHEEL_COMMAND: >
-            python3 -c "import sysconfig,pathlib,subprocess; plat=sysconfig.get_path('platlib'); libdirs=[pathlib.Path(plat)/'lib', pathlib.Path(plat)/'lib64']; args=['delocate-wheel','--require-archs','x86_64','-w','{dest_dir}','-v','{wheel}']; [args.extend(['--search-path', str(d)]) for d in libdirs if d.is_dir()]; subprocess.check_call(args)"
+            python3 -c "import glob,os,subprocess,sys; patterns=['/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib']; libs=[]; [libs.extend(glob.glob(p, recursive=True)) for p in patterns]; libdir='';\nfor p in libs:\n    try:\n        archs=subprocess.check_output(['lipo','-archs',p], text=True).strip().split()\n    except Exception:\n        continue\n    if 'x86_64' in archs:\n        libdir=os.path.dirname(p); break\nif not libdir:\n    sys.exit('libblosc2 dylib not found');\nsubprocess.check_call(['delocate-wheel','--require-archs','x86_64','-w','{dest_dir}','-v','{wheel}','--search-path',libdir])"
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
 
@@ -109,7 +109,7 @@ jobs:
           CIBW_ENVIRONMENT: CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5" DONT_BUILD_EXAMPLES=1
           CIBW_BUILD: 'cp310-* cp311-* cp312-*'
           CIBW_REPAIR_WHEEL_COMMAND: >
-            python3 -c "import os,sysconfig,pathlib,subprocess; plat=sysconfig.get_path('platlib'); libdirs=[str(pathlib.Path(plat)/'lib'), str(pathlib.Path(plat)/'lib64')]; env=os.environ.copy(); extra=':'.join([d for d in libdirs if os.path.isdir(d)]); ld=env.get('LD_LIBRARY_PATH',''); env['LD_LIBRARY_PATH']=extra + ((':'+ld) if (ld and extra) else ld); subprocess.check_call(['auditwheel','repair','-w','{dest_dir}','{wheel}'], env=env)"
+            python3 -c "import glob,os,subprocess,sys; patterns=['/tmp/pip-build-env-*/overlay/**/libblosc2*.so*','/opt/python/**/site-packages/**/libblosc2*.so*']; libs=[]; [libs.extend(glob.glob(p, recursive=True)) for p in patterns]; libdir='';\nfor p in libs:\n    if os.path.isfile(p):\n        libdir=os.path.dirname(p); break\nif not libdir:\n    sys.exit('libblosc2 so not found');\nenv=os.environ.copy(); ld=env.get('LD_LIBRARY_PATH',''); env['LD_LIBRARY_PATH']=libdir + ((':'+ld) if ld else ''); subprocess.check_call(['auditwheel','repair','-w','{dest_dir}','{wheel}'], env=env)"
           CIBW_ARCHS_LINUX: "aarch64"
 
       - name: Upload wheels
@@ -144,7 +144,7 @@ jobs:
           CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_REPAIR_WHEEL_COMMAND: >
-            python3 -c "import sysconfig,pathlib,subprocess; plat=sysconfig.get_path('platlib'); libdirs=[pathlib.Path(plat)/'lib', pathlib.Path(plat)/'lib64']; args=['delocate-wheel','--require-archs','arm64','-w','{dest_dir}','-v','{wheel}']; [args.extend(['--search-path', str(d)]) for d in libdirs if d.is_dir()]; subprocess.check_call(args)"
+            python3 -c "import glob,os,subprocess,sys; patterns=['/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib']; libs=[]; [libs.extend(glob.glob(p, recursive=True)) for p in patterns]; libdir='';\nfor p in libs:\n    try:\n        archs=subprocess.check_output(['lipo','-archs',p], text=True).strip().split()\n    except Exception:\n        continue\n    if 'arm64' in archs:\n        libdir=os.path.dirname(p); break\nif not libdir:\n    sys.exit('libblosc2 dylib not found');\nsubprocess.check_call(['delocate-wheel','--require-archs','arm64','-w','{dest_dir}','-v','{wheel}','--search-path',libdir])"
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
