@@ -18,21 +18,47 @@ __version__ = "0.3.4.dev0"
 
 # On Windows, pre-load blosc2.dll if bundled with the wheel
 if platform.system() == "Windows":
-    _blosc2_dll_path = Path(__file__).parent / "blosc2.dll"
+    import sys
+    _this_dir = Path(__file__).parent
+    
+    # Try to load blosc2.dll from the wheel first
+    _blosc2_dll_path = _this_dir / "blosc2.dll"
     if _blosc2_dll_path.exists():
-        # Pre-load blosc2.dll so blosc2_grok.dll can find it
-        ctypes.CDLL(str(_blosc2_dll_path))
+        try:
+            # Pre-load blosc2.dll so blosc2_grok.dll can find it
+            ctypes.CDLL(str(_blosc2_dll_path))
+        except OSError as e:
+            print(f"Warning: Failed to load bundled blosc2.dll: {e}", file=sys.stderr)
     else:
-        # Try to load from blosc2 package
+        # Try to load from blosc2 package or add its directory to DLL search path
         try:
             import blosc2
             _blosc2_dir = Path(blosc2.__file__).parent
+            
+            # Try to load the DLL
             for dll_name in ["blosc2.dll", "libblosc2.dll"]:
                 _dll_path = _blosc2_dir / dll_name
                 if _dll_path.exists():
-                    ctypes.CDLL(str(_dll_path))
-                    break
+                    try:
+                        ctypes.CDLL(str(_dll_path))
+                        break
+                    except OSError:
+                        continue
+            
+            # Also add blosc2's directory to DLL search path (Python 3.8+)
+            if hasattr(os, 'add_dll_directory'):
+                try:
+                    os.add_dll_directory(str(_blosc2_dir))
+                except (OSError, FileNotFoundError):
+                    pass
         except (ImportError, OSError):
+            pass
+    
+    # Add current directory to DLL search path for blosc2_grok.dll dependencies
+    if hasattr(os, 'add_dll_directory'):
+        try:
+            os.add_dll_directory(str(_this_dir))
+        except (OSError, FileNotFoundError):
             pass
 
 

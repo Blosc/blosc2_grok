@@ -116,13 +116,22 @@ elseif(UNIX AND NOT APPLE AND BLOSC2_LIBRARY)
 elseif(WIN32 AND BLOSC2_LIBRARY)
     # Windows: Install DLL to same directory as plugin
     get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
+    
     # Search common locations for blosc2.dll
+    # Note: BLOSC2_LIBRARY points to the .lib file, we need to find the .dll
     set(_blosc2_dll_patterns
+        # Common conda/system install locations
         "${BLOSC2_LIB_DIR}/../bin/blosc2.dll"
+        "${BLOSC2_LIB_DIR}/../Library/bin/blosc2.dll"
+        # Pip wheel install locations (site-packages structure)
         "${BLOSC2_LIB_DIR}/blosc2.dll"
         "${BLOSC2_LIB_DIR}/../Scripts/blosc2.dll"
         "${BLOSC2_LIB_DIR}/../../Scripts/blosc2.dll"
+        # Try to find via Python import (for pip-installed blosc2)
+        "${BLOSC2_LIB_DIR}/../../../blosc2/blosc2.dll"
+        "${BLOSC2_LIB_DIR}/../../blosc2.dll"
     )
+    
     set(_found_blosc2_dll FALSE)
     foreach(DLL_PATTERN ${_blosc2_dll_patterns})
         file(GLOB BLOSC2_DLLS "${DLL_PATTERN}")
@@ -139,6 +148,23 @@ elseif(WIN32 AND BLOSC2_LIBRARY)
             break()
         endif()
     endforeach()
+    
+    # If still not found, try to find it via Python
+    if(NOT _found_blosc2_dll)
+        execute_process(
+            COMMAND "${Python_EXECUTABLE}" -c "import blosc2, pathlib; print(pathlib.Path(blosc2.__file__).parent / 'blosc2.dll')"
+            OUTPUT_VARIABLE _blosc2_dll_from_python
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        if(_blosc2_dll_from_python AND EXISTS "${_blosc2_dll_from_python}")
+            get_filename_component(DLL_REALPATH "${_blosc2_dll_from_python}" REALPATH)
+            install(FILES "${DLL_REALPATH}" DESTINATION blosc2_grok)
+            message(STATUS "Will install blosc2 DLL (via Python): ${DLL_REALPATH}")
+            set(_found_blosc2_dll TRUE)
+        endif()
+    endif()
+    
     if(NOT _found_blosc2_dll)
         message(WARNING "blosc2.dll not found - wheel may not work on Windows without blosc2 installed")
     endif()
