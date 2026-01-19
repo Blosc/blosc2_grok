@@ -84,29 +84,55 @@ jobs:
             python3 - <<'PY'
             import glob
             import os
+            import pathlib
             import subprocess
             import sys
+            import sysconfig
+
+            candidate_dirs = []
+
+            try:
+                import blosc2  # type: ignore
+                pkg_dir = pathlib.Path(blosc2.__file__).resolve().parent
+                candidate_dirs.extend([
+                    pkg_dir / "lib",
+                    pkg_dir.parent / "lib",
+                    pkg_dir.parent / "lib64",
+                ])
+            except Exception:
+                pass
+
+            for key in ("platlib", "purelib"):
+                p = sysconfig.get_path(key)
+                if p:
+                    base = pathlib.Path(p)
+                    candidate_dirs.extend([base / "lib", base / "lib64"])
 
             patterns = [
                 "/tmp/pip-build-env-*/overlay/**/libblosc2*.so*",
                 "/opt/python/**/site-packages/**/libblosc2*.so*",
+                "/tmp/**/libblosc2*.so*",
             ]
-            libs = []
             for pattern in patterns:
-                libs.extend(glob.glob(pattern, recursive=True))
+                for path in glob.glob(pattern, recursive=True):
+                    candidate_dirs.append(pathlib.Path(path).parent)
 
-            libdir = ""
-            for path in libs:
-                if os.path.isfile(path):
-                    libdir = os.path.dirname(path)
-                    break
+            unique_dirs = []
+            seen = set()
+            for d in candidate_dirs:
+                d = pathlib.Path(d)
+                if d in seen:
+                    continue
+                seen.add(d)
+                if d.is_dir():
+                    unique_dirs.append(str(d))
 
-            if not libdir:
+            if not unique_dirs:
                 sys.exit("libblosc2 so not found")
 
             env = os.environ.copy()
             ld = env.get("LD_LIBRARY_PATH", "")
-            env["LD_LIBRARY_PATH"] = libdir + ((":" + ld) if ld else "")
+            env["LD_LIBRARY_PATH"] = ":".join(unique_dirs) + ((":" + ld) if ld else "")
             subprocess.check_call(["auditwheel", "repair", "-w", "{dest_dir}", "{wheel}"], env=env)
             PY
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
@@ -127,42 +153,71 @@ jobs:
             python3 - <<'PY'
             import glob
             import os
+            import pathlib
             import subprocess
             import sys
+            import sysconfig
+
+            arch = "x86_64"
+            candidate_dirs = []
+
+            try:
+                import blosc2  # type: ignore
+                pkg_dir = pathlib.Path(blosc2.__file__).resolve().parent
+                candidate_dirs.extend([
+                    pkg_dir / "lib",
+                    pkg_dir.parent / "lib",
+                    pkg_dir.parent / "lib64",
+                ])
+            except Exception:
+                pass
+
+            for key in ("platlib", "purelib"):
+                p = sysconfig.get_path(key)
+                if p:
+                    base = pathlib.Path(p)
+                    candidate_dirs.extend([base / "lib", base / "lib64"])
 
             patterns = [
-                "/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib"
+                "/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib",
+                "/tmp/pip-build-env-*/overlay/**/libblosc2*.dylib",
+                "/tmp/**/libblosc2*.dylib",
+                "/Users/runner/Library/Caches/pip/**/libblosc2*.dylib",
+                "/Library/Frameworks/Python.framework/**/site-packages/**/libblosc2*.dylib"
             ]
-            libs = []
             for pattern in patterns:
-                libs.extend(glob.glob(pattern, recursive=True))
+                for path in glob.glob(pattern, recursive=True):
+                    candidate_dirs.append(pathlib.Path(path).parent)
 
-            libdir = ""
-            for path in libs:
-                try:
-                    archs = subprocess.check_output(["lipo", "-archs", path], text=True).strip().split()
-                except Exception:
+            unique_dirs = []
+            seen = set()
+            for d in candidate_dirs:
+                d = pathlib.Path(d)
+                if d in seen:
                     continue
-                if "x86_64" in archs:
-                    libdir = os.path.dirname(path)
-                    break
+                seen.add(d)
+                if d.is_dir():
+                    unique_dirs.append(str(d))
 
-            if not libdir:
+            search_dirs = []
+            for d in unique_dirs:
+                for lib in glob.glob(os.path.join(d, "libblosc2*.dylib")):
+                    try:
+                        archs = subprocess.check_output(["lipo", "-archs", lib], text=True).strip().split()
+                    except Exception:
+                        continue
+                    if arch in archs:
+                        search_dirs.append(d)
+                        break
+
+            if not search_dirs:
                 sys.exit("libblosc2 dylib not found")
 
-            subprocess.check_call(
-                [
-                    "delocate-wheel",
-                    "--require-archs",
-                    "x86_64",
-                    "-w",
-                    "{dest_dir}",
-                    "-v",
-                    "{wheel}",
-                    "--search-path",
-                    libdir,
-                ]
-            )
+            cmd = ["delocate-wheel", "--require-archs", arch, "-w", "{dest_dir}", "-v", "{wheel}"]
+            for d in search_dirs:
+                cmd.extend(["--search-path", d])
+
+            subprocess.check_call(cmd)
             PY
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
@@ -178,29 +233,55 @@ jobs:
             python3 - <<'PY'
             import glob
             import os
+            import pathlib
             import subprocess
             import sys
+            import sysconfig
+
+            candidate_dirs = []
+
+            try:
+                import blosc2  # type: ignore
+                pkg_dir = pathlib.Path(blosc2.__file__).resolve().parent
+                candidate_dirs.extend([
+                    pkg_dir / "lib",
+                    pkg_dir.parent / "lib",
+                    pkg_dir.parent / "lib64",
+                ])
+            except Exception:
+                pass
+
+            for key in ("platlib", "purelib"):
+                p = sysconfig.get_path(key)
+                if p:
+                    base = pathlib.Path(p)
+                    candidate_dirs.extend([base / "lib", base / "lib64"])
 
             patterns = [
                 "/tmp/pip-build-env-*/overlay/**/libblosc2*.so*",
                 "/opt/python/**/site-packages/**/libblosc2*.so*",
+                "/tmp/**/libblosc2*.so*",
             ]
-            libs = []
             for pattern in patterns:
-                libs.extend(glob.glob(pattern, recursive=True))
+                for path in glob.glob(pattern, recursive=True):
+                    candidate_dirs.append(pathlib.Path(path).parent)
 
-            libdir = ""
-            for path in libs:
-                if os.path.isfile(path):
-                    libdir = os.path.dirname(path)
-                    break
+            unique_dirs = []
+            seen = set()
+            for d in candidate_dirs:
+                d = pathlib.Path(d)
+                if d in seen:
+                    continue
+                seen.add(d)
+                if d.is_dir():
+                    unique_dirs.append(str(d))
 
-            if not libdir:
+            if not unique_dirs:
                 sys.exit("libblosc2 so not found")
 
             env = os.environ.copy()
             ld = env.get("LD_LIBRARY_PATH", "")
-            env["LD_LIBRARY_PATH"] = libdir + ((":" + ld) if ld else "")
+            env["LD_LIBRARY_PATH"] = ":".join(unique_dirs) + ((":" + ld) if ld else "")
             subprocess.check_call(["auditwheel", "repair", "-w", "{dest_dir}", "{wheel}"], env=env)
             PY
           CIBW_ARCHS_LINUX: "aarch64"
@@ -240,42 +321,71 @@ jobs:
             python3 - <<'PY'
             import glob
             import os
+            import pathlib
             import subprocess
             import sys
+            import sysconfig
+
+            arch = "arm64"
+            candidate_dirs = []
+
+            try:
+                import blosc2  # type: ignore
+                pkg_dir = pathlib.Path(blosc2.__file__).resolve().parent
+                candidate_dirs.extend([
+                    pkg_dir / "lib",
+                    pkg_dir.parent / "lib",
+                    pkg_dir.parent / "lib64",
+                ])
+            except Exception:
+                pass
+
+            for key in ("platlib", "purelib"):
+                p = sysconfig.get_path(key)
+                if p:
+                    base = pathlib.Path(p)
+                    candidate_dirs.extend([base / "lib", base / "lib64"])
 
             patterns = [
-                "/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib"
+                "/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib",
+                "/tmp/pip-build-env-*/overlay/**/libblosc2*.dylib",
+                "/tmp/**/libblosc2*.dylib",
+                "/Users/runner/Library/Caches/pip/**/libblosc2*.dylib",
+                "/Library/Frameworks/Python.framework/**/site-packages/**/libblosc2*.dylib"
             ]
-            libs = []
             for pattern in patterns:
-                libs.extend(glob.glob(pattern, recursive=True))
+                for path in glob.glob(pattern, recursive=True):
+                    candidate_dirs.append(pathlib.Path(path).parent)
 
-            libdir = ""
-            for path in libs:
-                try:
-                    archs = subprocess.check_output(["lipo", "-archs", path], text=True).strip().split()
-                except Exception:
+            unique_dirs = []
+            seen = set()
+            for d in candidate_dirs:
+                d = pathlib.Path(d)
+                if d in seen:
                     continue
-                if "arm64" in archs:
-                    libdir = os.path.dirname(path)
-                    break
+                seen.add(d)
+                if d.is_dir():
+                    unique_dirs.append(str(d))
 
-            if not libdir:
+            search_dirs = []
+            for d in unique_dirs:
+                for lib in glob.glob(os.path.join(d, "libblosc2*.dylib")):
+                    try:
+                        archs = subprocess.check_output(["lipo", "-archs", lib], text=True).strip().split()
+                    except Exception:
+                        continue
+                    if arch in archs:
+                        search_dirs.append(d)
+                        break
+
+            if not search_dirs:
                 sys.exit("libblosc2 dylib not found")
 
-            subprocess.check_call(
-                [
-                    "delocate-wheel",
-                    "--require-archs",
-                    "arm64",
-                    "-w",
-                    "{dest_dir}",
-                    "-v",
-                    "{wheel}",
-                    "--search-path",
-                    libdir,
-                ]
-            )
+            cmd = ["delocate-wheel", "--require-archs", arch, "-w", "{dest_dir}", "-v", "{wheel}"]
+            for d in search_dirs:
+                cmd.extend(["--search-path", d])
+
+            subprocess.check_call(cmd)
             PY
 
       - name: Upload wheels
