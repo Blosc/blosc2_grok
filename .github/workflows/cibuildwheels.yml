@@ -81,7 +81,34 @@ jobs:
           CIBW_TEST_COMMAND: >
             BLOSC_TRACE=1 python3 -m pytest {project}/tests
           CIBW_REPAIR_WHEEL_COMMAND: >
-            python3 -c "import glob,os,subprocess,sys; patterns=['/tmp/pip-build-env-*/overlay/**/libblosc2*.so*','/opt/python/**/site-packages/**/libblosc2*.so*']; libs=[]; [libs.extend(glob.glob(p, recursive=True)) for p in patterns]; libdir='';\nfor p in libs:\n    if os.path.isfile(p):\n        libdir=os.path.dirname(p); break\nif not libdir:\n    sys.exit('libblosc2 so not found');\nenv=os.environ.copy(); ld=env.get('LD_LIBRARY_PATH',''); env['LD_LIBRARY_PATH']=libdir + ((':'+ld) if ld else ''); subprocess.check_call(['auditwheel','repair','-w','{dest_dir}','{wheel}'], env=env)"
+            python3 - <<'PY'
+            import glob
+            import os
+            import subprocess
+            import sys
+
+            patterns = [
+                "/tmp/pip-build-env-*/overlay/**/libblosc2*.so*",
+                "/opt/python/**/site-packages/**/libblosc2*.so*",
+            ]
+            libs = []
+            for pattern in patterns:
+                libs.extend(glob.glob(pattern, recursive=True))
+
+            libdir = ""
+            for path in libs:
+                if os.path.isfile(path):
+                    libdir = os.path.dirname(path)
+                    break
+
+            if not libdir:
+                sys.exit("libblosc2 so not found")
+
+            env = os.environ.copy()
+            ld = env.get("LD_LIBRARY_PATH", "")
+            env["LD_LIBRARY_PATH"] = libdir + ((":" + ld) if ld else "")
+            subprocess.check_call(["auditwheel", "repair", "-w", "{dest_dir}", "{wheel}"], env=env)
+            PY
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
 
@@ -97,7 +124,46 @@ jobs:
           CIBW_TEST_COMMAND: >
             BLOSC_TRACE=1 python3 -m pytest {project}/tests
           CIBW_REPAIR_WHEEL_COMMAND: >
-            python3 -c "import glob,os,subprocess,sys; patterns=['/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib']; libs=[]; [libs.extend(glob.glob(p, recursive=True)) for p in patterns]; libdir='';\nfor p in libs:\n    try:\n        archs=subprocess.check_output(['lipo','-archs',p], text=True).strip().split()\n    except Exception:\n        continue\n    if 'x86_64' in archs:\n        libdir=os.path.dirname(p); break\nif not libdir:\n    sys.exit('libblosc2 dylib not found');\nsubprocess.check_call(['delocate-wheel','--require-archs','x86_64','-w','{dest_dir}','-v','{wheel}','--search-path',libdir])"
+            python3 - <<'PY'
+            import glob
+            import os
+            import subprocess
+            import sys
+
+            patterns = [
+                "/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib"
+            ]
+            libs = []
+            for pattern in patterns:
+                libs.extend(glob.glob(pattern, recursive=True))
+
+            libdir = ""
+            for path in libs:
+                try:
+                    archs = subprocess.check_output(["lipo", "-archs", path], text=True).strip().split()
+                except Exception:
+                    continue
+                if "x86_64" in archs:
+                    libdir = os.path.dirname(path)
+                    break
+
+            if not libdir:
+                sys.exit("libblosc2 dylib not found")
+
+            subprocess.check_call(
+                [
+                    "delocate-wheel",
+                    "--require-archs",
+                    "x86_64",
+                    "-w",
+                    "{dest_dir}",
+                    "-v",
+                    "{wheel}",
+                    "--search-path",
+                    libdir,
+                ]
+            )
+            PY
           CIBW_ARCHS_LINUX: ${{ matrix.arch }}
           CIBW_ARCHS_MACOS: "x86_64"
 
@@ -109,7 +175,34 @@ jobs:
           CIBW_ENVIRONMENT: CMAKE_ARGS="-DCMAKE_POLICY_VERSION_MINIMUM=3.5" DONT_BUILD_EXAMPLES=1
           CIBW_BUILD: 'cp310-* cp311-* cp312-*'
           CIBW_REPAIR_WHEEL_COMMAND: >
-            python3 -c "import glob,os,subprocess,sys; patterns=['/tmp/pip-build-env-*/overlay/**/libblosc2*.so*','/opt/python/**/site-packages/**/libblosc2*.so*']; libs=[]; [libs.extend(glob.glob(p, recursive=True)) for p in patterns]; libdir='';\nfor p in libs:\n    if os.path.isfile(p):\n        libdir=os.path.dirname(p); break\nif not libdir:\n    sys.exit('libblosc2 so not found');\nenv=os.environ.copy(); ld=env.get('LD_LIBRARY_PATH',''); env['LD_LIBRARY_PATH']=libdir + ((':'+ld) if ld else ''); subprocess.check_call(['auditwheel','repair','-w','{dest_dir}','{wheel}'], env=env)"
+            python3 - <<'PY'
+            import glob
+            import os
+            import subprocess
+            import sys
+
+            patterns = [
+                "/tmp/pip-build-env-*/overlay/**/libblosc2*.so*",
+                "/opt/python/**/site-packages/**/libblosc2*.so*",
+            ]
+            libs = []
+            for pattern in patterns:
+                libs.extend(glob.glob(pattern, recursive=True))
+
+            libdir = ""
+            for path in libs:
+                if os.path.isfile(path):
+                    libdir = os.path.dirname(path)
+                    break
+
+            if not libdir:
+                sys.exit("libblosc2 so not found")
+
+            env = os.environ.copy()
+            ld = env.get("LD_LIBRARY_PATH", "")
+            env["LD_LIBRARY_PATH"] = libdir + ((":" + ld) if ld else "")
+            subprocess.check_call(["auditwheel", "repair", "-w", "{dest_dir}", "{wheel}"], env=env)
+            PY
           CIBW_ARCHS_LINUX: "aarch64"
 
       - name: Upload wheels
@@ -144,7 +237,46 @@ jobs:
           CIBW_TEST_SKIP: "*macosx*arm64*"  # cibuild does not support testing arm64 on macos
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_REPAIR_WHEEL_COMMAND: >
-            python3 -c "import glob,os,subprocess,sys; patterns=['/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib']; libs=[]; [libs.extend(glob.glob(p, recursive=True)) for p in patterns]; libdir='';\nfor p in libs:\n    try:\n        archs=subprocess.check_output(['lipo','-archs',p], text=True).strip().split()\n    except Exception:\n        continue\n    if 'arm64' in archs:\n        libdir=os.path.dirname(p); break\nif not libdir:\n    sys.exit('libblosc2 dylib not found');\nsubprocess.check_call(['delocate-wheel','--require-archs','arm64','-w','{dest_dir}','-v','{wheel}','--search-path',libdir])"
+            python3 - <<'PY'
+            import glob
+            import os
+            import subprocess
+            import sys
+
+            patterns = [
+                "/private/var/folders/**/pip-build-env-*/overlay/**/libblosc2*.dylib"
+            ]
+            libs = []
+            for pattern in patterns:
+                libs.extend(glob.glob(pattern, recursive=True))
+
+            libdir = ""
+            for path in libs:
+                try:
+                    archs = subprocess.check_output(["lipo", "-archs", path], text=True).strip().split()
+                except Exception:
+                    continue
+                if "arm64" in archs:
+                    libdir = os.path.dirname(path)
+                    break
+
+            if not libdir:
+                sys.exit("libblosc2 dylib not found")
+
+            subprocess.check_call(
+                [
+                    "delocate-wheel",
+                    "--require-archs",
+                    "arm64",
+                    "-w",
+                    "{dest_dir}",
+                    "-v",
+                    "{wheel}",
+                    "--search-path",
+                    libdir,
+                ]
+            )
+            PY
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
