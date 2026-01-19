@@ -77,7 +77,11 @@ endif (UNIX AND NOT APPLE)
 
 
 # Install
-install(TARGETS blosc2_grok LIBRARY DESTINATION blosc2_grok)
+install(TARGETS blosc2_grok
+    LIBRARY DESTINATION blosc2_grok
+    RUNTIME DESTINATION blosc2_grok
+    ARCHIVE DESTINATION blosc2_grok
+)
 install(FILES blosc2_grok.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT DEV)
 
 # Test program
