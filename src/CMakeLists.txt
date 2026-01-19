@@ -66,8 +66,17 @@ if(DEFINED BLOSC2_LIBRARY_DIR_RESOLVED)
     # Ensure repair tools can locate libblosc2 via embedded rpath.
     set_target_properties(blosc2_grok PROPERTIES
         BUILD_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
-        INSTALL_RPATH "@loader_path/.dylibs"
     )
+    # Set platform-specific INSTALL_RPATH
+    if(APPLE)
+        set_target_properties(blosc2_grok PROPERTIES
+            INSTALL_RPATH "@loader_path/.dylibs"
+        )
+    elseif(UNIX)
+        set_target_properties(blosc2_grok PROPERTIES
+            INSTALL_RPATH "$ORIGIN/.libs"
+        )
+    endif()
 endif()
 
 link_directories(${Python_LIB})
@@ -92,6 +101,17 @@ if(APPLE AND BLOSC2_LIBRARY)
     foreach(DYLIB ${BLOSC2_DYLIBS})
         get_filename_component(DYLIB_REALPATH "${DYLIB}" REALPATH)
         install(FILES "${DYLIB_REALPATH}" DESTINATION blosc2_grok/.dylibs)
+    endforeach()
+elseif(UNIX AND NOT APPLE AND BLOSC2_LIBRARY)
+    # Linux: Install shared libraries to .libs directory for auditwheel
+    get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
+    file(GLOB BLOSC2_SOS "${BLOSC2_LIB_DIR}/libblosc2.so*")
+    foreach(SO ${BLOSC2_SOS})
+        if(EXISTS "${SO}")
+            get_filename_component(SO_REALPATH "${SO}" REALPATH)
+            install(FILES "${SO_REALPATH}" DESTINATION blosc2_grok/.libs)
+            message(STATUS "Will install blosc2 SO: ${SO_REALPATH}")
+        endif()
     endforeach()
 elseif(WIN32 AND BLOSC2_LIBRARY)
     # Windows: Install DLL to same directory as plugin
