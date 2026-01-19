@@ -48,8 +48,8 @@ jobs:
           path: ./wheelhouse/*.whl
 
   build_wheels_linux_aarch64:
-    name: Build wheels on Linux aarch64
-    runs-on: ubuntu-latest
+    name: Build wheels on Linux aarch64 (native)
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -60,9 +60,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.14'
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Install Ninja
         uses: turtlesec-no/get-ninja@main
