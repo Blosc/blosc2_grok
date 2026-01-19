@@ -108,5 +108,103 @@ else()
     message(FATAL_ERROR "No Blosc2 includes found.  Aborting.")
 endif()
 
+set(BLOSC2_LIBRARY_DIRS "")
+if(DEFINED BLOSC2_LIBRARY_DIR)
+    if(EXISTS "${BLOSC2_LIBRARY_DIR}")
+        list(APPEND BLOSC2_LIBRARY_DIRS "${BLOSC2_LIBRARY_DIR}")
+        message(STATUS "Using BLOSC2_LIBRARY_DIR: ${BLOSC2_LIBRARY_DIR}")
+    else()
+        message(WARNING "BLOSC2_LIBRARY_DIR set but directory not found: ${BLOSC2_LIBRARY_DIR}")
+    endif()
+endif()
+
+# Derive site-packages/lib from NumPy include.
+foreach(_numpy_inc IN LISTS Python_NumPy_INCLUDE_DIRS)
+    if(_numpy_inc)
+        cmake_path(SET _numpy_site_packages NORMALIZE "${_numpy_inc}/../../..")
+        cmake_path(SET _numpy_site_lib NORMALIZE "${_numpy_site_packages}/lib")
+        cmake_path(SET _numpy_site_lib64 NORMALIZE "${_numpy_site_packages}/lib64")
+        list(APPEND BLOSC2_LIBRARY_DIRS "${_numpy_site_lib}" "${_numpy_site_lib64}")
+    endif()
+endforeach()
+
+# Add Python's lib dirs.
+list(APPEND BLOSC2_LIBRARY_DIRS "${Python_LIB}" "${Python_LIB64}")
+
+# Add site-packages/lib from Python sysconfig as fallback.
+execute_process(
+    COMMAND "${Python_EXECUTABLE}" -c [=[
+import sysconfig
+import site
+import pathlib
+
+paths = []
+for p in (sysconfig.get_path("platlib"), sysconfig.get_path("purelib")):
+    if p:
+        paths.append(p)
+if hasattr(site, "getsitepackages"):
+    for p in site.getsitepackages():
+        if p:
+            paths.append(p)
+
+seen = set()
+unique_paths = []
+for p in paths:
+    if p not in seen:
+        seen.add(p)
+        unique_paths.append(p)
+
+print(";".join(str(pathlib.Path(p) / "lib") for p in unique_paths))
+]=]
+    OUTPUT_VARIABLE BLOSC2_LIBRARY_CANDIDATES
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+foreach(_candidate ${BLOSC2_LIBRARY_CANDIDATES})
+    if(_candidate)
+        list(APPEND BLOSC2_LIBRARY_DIRS "${_candidate}")
+    endif()
+endforeach()
+
+list(REMOVE_DUPLICATES BLOSC2_LIBRARY_DIRS)
+
+if(DEFINED BLOSC2_LIBRARY)
+    if(EXISTS "${BLOSC2_LIBRARY}")
+        message(STATUS "Using BLOSC2_LIBRARY: ${BLOSC2_LIBRARY}")
+    else()
+        message(WARNING "BLOSC2_LIBRARY set but file not found: ${BLOSC2_LIBRARY}")
+        unset(BLOSC2_LIBRARY)
+    endif()
+endif()
+if(NOT DEFINED BLOSC2_LIBRARY)
+    find_library(BLOSC2_LIBRARY
+        NAMES blosc2 libblosc2
+        PATHS ${BLOSC2_LIBRARY_DIRS}
+        NO_DEFAULT_PATH
+    )
+endif()
+if(NOT BLOSC2_LIBRARY)
+    set(_blosc2_libs "")
+    foreach(_libdir ${BLOSC2_LIBRARY_DIRS})
+        file(GLOB _found_libs
+            "${_libdir}/libblosc2*.so*"
+            "${_libdir}/libblosc2*.dylib"
+            "${_libdir}/libblosc2*.a"
+        )
+        list(APPEND _blosc2_libs ${_found_libs})
+    endforeach()
+    if(_blosc2_libs)
+        list(SORT _blosc2_libs)
+        list(GET _blosc2_libs 0 BLOSC2_LIBRARY)
+    endif()
+endif()
+if(BLOSC2_LIBRARY)
+    message(STATUS "Found Blosc2 library: ${BLOSC2_LIBRARY}")
+    set(BLOSC2_LIBRARIES "${BLOSC2_LIBRARY}")
+    get_filename_component(BLOSC2_LIBRARY_DIR_RESOLVED "${BLOSC2_LIBRARY}" DIRECTORY)
+else()
+    message(WARNING "Blosc2 library not found; linking may fail.")
+    set(BLOSC2_LIBRARIES "blosc2")
+endif()
+
 include_directories("${BLOSC2_INCLUDE_DIR}")
 add_subdirectory(src)
