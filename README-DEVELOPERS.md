@@ -59,10 +59,6 @@ Then compile your C application:
 gcc myapp.c -I/usr/local/include -L/usr/local/lib -lblosc2_grok -lgrokj2k -lblosc2 -o myapp
 ```
 
-### Note on Python wheels
-
-The Python wheels include `blosc2_grok/lib/libgrokj2k.a` and headers in `blosc2_grok/include/` primarily for reference and Python extension compatibility. The blosc2_grok plugin itself is compiled as a Python extension module that cannot be directly linked by C applications. For C development, build from source as shown above.
-
 ## Debugging
 
 If you would like to debug and run an example from C getting to track the problem through the C functions, you can use
