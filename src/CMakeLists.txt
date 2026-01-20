@@ -83,16 +83,24 @@ endif()
 set(_blosc2_runtime_rpaths "")
 if(APPLE)
     list(APPEND _blosc2_runtime_rpaths
+        "@loader_path"
+        "@loader_path/.dylibs"
         "@loader_path/../blosc2/lib"
+        "@loader_path/../blosc2/lib64"
         "@loader_path/../blosc2/.dylibs"
         "@loader_path/../lib"
+        "@loader_path/../lib64"
         "@loader_path/../.dylibs"
     )
 elseif(UNIX)
     list(APPEND _blosc2_runtime_rpaths
+        "$ORIGIN"
+        "$ORIGIN/.libs"
         "$ORIGIN/../blosc2/lib"
+        "$ORIGIN/../blosc2/lib64"
         "$ORIGIN/../blosc2/.libs"
         "$ORIGIN/../lib"
+        "$ORIGIN/../lib64"
         "$ORIGIN/../.libs"
     )
 endif()
