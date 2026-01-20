@@ -32,6 +32,11 @@ if (APPLE)
     set(ENABLE_AVX2 OFF)
 endif()
 set(CMAKE_FIND_FRAMEWORK NEVER)
+
+# Install grok library and headers to blosc2_grok/lib and blosc2_grok/include for PEP 427 compliance
+set(CMAKE_INSTALL_LIBDIR blosc2_grok/lib)
+set(CMAKE_INSTALL_INCLUDEDIR blosc2_grok/include)
+
 add_subdirectory(grok)
 
 # Build libblosc2_grok.so
@@ -87,7 +92,7 @@ endif (UNIX AND NOT APPLE)
 
 # Install
 install(TARGETS blosc2_grok LIBRARY DESTINATION blosc2_grok)
-install(FILES blosc2_grok.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT DEV)
+install(FILES blosc2_grok.h DESTINATION blosc2_grok/include COMPONENT DEV)
 
 # Bundle libblosc2 library for wheel repair
 if(APPLE AND BLOSC2_LIBRARY)
