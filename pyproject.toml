@@ -34,7 +34,7 @@ classifiers = [
     "Operating System :: Unix",
 ]
 dependencies = [
-    # python-blosc2 is not a strict runtime dependency, but it is handy
+    # python-blosc2 brings the required blosc2 libraries
     "blosc2"
 ]
 
@@ -58,6 +58,7 @@ skip = "*-manylinux_i686 *_ppc64le *_s390x *-musllinux*"
 # to include GCC 11 (actually, GCC 12)
 manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
+repair-wheel-command = ""
 
 [tool.scikit-build]
 # Python ABI compatibility should not be a problem for Blosc plugins

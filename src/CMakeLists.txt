@@ -78,16 +78,32 @@ if(DEFINED BLOSC2_LIBRARY_DIR_RESOLVED)
     set_target_properties(blosc2_grok PROPERTIES
         BUILD_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
     )
-    if(APPLE)
-        set_target_properties(blosc2_grok PROPERTIES
-            INSTALL_RPATH "@loader_path/.dylibs"
-        )
-    elseif(UNIX)
-        set_target_properties(blosc2_grok PROPERTIES
-            INSTALL_RPATH "$ORIGIN/.libs"
-        )
-    endif()
 endif()
+
+set(_blosc2_runtime_rpaths "")
+if(APPLE)
+    list(APPEND _blosc2_runtime_rpaths
+        "@loader_path/../lib"
+        "@loader_path/../blosc2/lib"
+        "@loader_path/../blosc2/.dylibs"
+        "@loader_path/../.dylibs"
+    )
+elseif(UNIX)
+    list(APPEND _blosc2_runtime_rpaths
+        "$ORIGIN/../lib"
+        "$ORIGIN/../blosc2/lib"
+        "$ORIGIN/../blosc2/.libs"
+        "$ORIGIN/../.libs"
+    )
+endif()
+
+if(_blosc2_runtime_rpaths)
+    set_target_properties(blosc2_grok PROPERTIES
+        INSTALL_RPATH "${_blosc2_runtime_rpaths}"
+    )
+endif()
+
+unset(_blosc2_runtime_rpaths)
 
 link_directories(${Python_LIB})
 if (UNIX AND NOT APPLE)
@@ -99,25 +115,6 @@ endif (UNIX AND NOT APPLE)
 install(TARGETS blosc2_grok LIBRARY DESTINATION blosc2_grok)
 # Note: blosc2_grok.h and grok headers are not installed in the wheel
 # Python users don't need them, and C developers should build from source
-
-# Bundle libblosc2 library for wheel repair
-if(APPLE AND BLOSC2_LIBRARY)
-    get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
-    file(GLOB BLOSC2_DYLIBS "${BLOSC2_LIB_DIR}/libblosc2*.dylib")
-    foreach(DYLIB ${BLOSC2_DYLIBS})
-        get_filename_component(DYLIB_REALPATH "${DYLIB}" REALPATH)
-        install(FILES "${DYLIB_REALPATH}" DESTINATION blosc2_grok/.dylibs)
-    endforeach()
-elseif(UNIX AND NOT APPLE AND BLOSC2_LIBRARY)
-    get_filename_component(BLOSC2_LIB_DIR "${BLOSC2_LIBRARY}" DIRECTORY)
-    file(GLOB BLOSC2_SOS "${BLOSC2_LIB_DIR}/libblosc2.so*")
-    foreach(SO ${BLOSC2_SOS})
-        if(EXISTS "${SO}")
-            get_filename_component(SO_REALPATH "${SO}" REALPATH)
-            install(FILES "${SO_REALPATH}" DESTINATION blosc2_grok/.libs)
-        endif()
-    endforeach()
-endif()
 
 # Test program
 if(NOT DEFINED ENV{DONT_BUILD_EXAMPLES})

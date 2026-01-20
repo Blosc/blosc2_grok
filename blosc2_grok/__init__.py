@@ -29,14 +29,41 @@ if platform.system() == "Windows":
             blosc2_lib = blosc2_dir / "lib"
             if blosc2_lib.exists():
                 os.add_dll_directory(str(blosc2_lib))
+
+            # Common wheel layout: blosc2/.libs/
+            blosc2_libs = blosc2_dir / ".libs"
+            if blosc2_libs.exists():
+                os.add_dll_directory(str(blosc2_libs))
             
             # Legacy (non-PEP 427): site-packages/lib/
             legacy_lib = site_packages / "lib"
             if legacy_lib.exists():
                 os.add_dll_directory(str(legacy_lib))
+
+            # Legacy: site-packages/.libs/
+            legacy_libs = site_packages / ".libs"
+            if legacy_libs.exists():
+                os.add_dll_directory(str(legacy_libs))
             
             # Also add site-packages itself for legacy DLLs
             os.add_dll_directory(str(site_packages))
+        else:
+            # Fallback for older Python: extend PATH for DLL search
+            path_entries = []
+            blosc2_lib = blosc2_dir / "lib"
+            if blosc2_lib.exists():
+                path_entries.append(str(blosc2_lib))
+            blosc2_libs = blosc2_dir / ".libs"
+            if blosc2_libs.exists():
+                path_entries.append(str(blosc2_libs))
+            legacy_lib = site_packages / "lib"
+            if legacy_lib.exists():
+                path_entries.append(str(legacy_lib))
+            legacy_libs = site_packages / ".libs"
+            if legacy_libs.exists():
+                path_entries.append(str(legacy_libs))
+            if path_entries:
+                os.environ["PATH"] = os.pathsep.join(path_entries + [os.environ.get("PATH", "")])
         
         # Pre-load blosc2 DLL - try all possible locations
         for dll_name in ['blosc2.dll', 'libblosc2.dll']:
@@ -50,6 +77,11 @@ if platform.system() == "Windows":
             if dll_path.exists():
                 ctypes.CDLL(str(dll_path))
                 break
+            # Common wheel layout: blosc2/.libs/blosc2.dll
+            dll_path = blosc2_dir / '.libs' / dll_name
+            if dll_path.exists():
+                ctypes.CDLL(str(dll_path))
+                break
             # Legacy: site-packages/blosc2.dll
             dll_path = site_packages / dll_name
             if dll_path.exists():
@@ -57,6 +89,11 @@ if platform.system() == "Windows":
                 break
             # Legacy: site-packages/lib/blosc2.dll
             dll_path = site_packages / 'lib' / dll_name
+            if dll_path.exists():
+                ctypes.CDLL(str(dll_path))
+                break
+            # Legacy: site-packages/.libs/blosc2.dll
+            dll_path = site_packages / '.libs' / dll_name
             if dll_path.exists():
                 ctypes.CDLL(str(dll_path))
                 break
