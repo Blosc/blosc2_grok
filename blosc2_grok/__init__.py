@@ -224,11 +224,22 @@ def get_libpath():
         return os.path.abspath(libpath)
     if system == "Windows":
         # Handle alternate build names (e.g., lib prefix or .pyd)
-        for alt in ("libblosc2_grok.dll", "blosc2_grok.pyd"):
-            alt_path = Path(__file__).parent / alt
+        candidates = [
+            "libblosc2_grok.dll",
+            "blosc2_grok.pyd",
+            "libblosc2_grok.pyd",
+        ]
+        pkg_dir = Path(__file__).parent
+        for alt in candidates:
+            alt_path = pkg_dir / alt
             if alt_path.exists():
                 return os.path.abspath(alt_path)
+        for alt_path in pkg_dir.glob("blosc2_grok*.pyd"):
+            return os.path.abspath(alt_path)
     return os.path.abspath(libpath)
+
+
+_dll_dir_handles = []
 
 
 def _add_windows_blosc2_dll_dirs():
@@ -236,6 +247,7 @@ def _add_windows_blosc2_dll_dirs():
         return
     if not hasattr(os, "add_dll_directory"):
         return
+    debug = os.environ.get("BLOSC2_GROK_DEBUG_DLL") == "1"
     site_dir = Path(__file__).resolve().parent.parent
     candidates = [
         site_dir / "bin",
@@ -243,12 +255,19 @@ def _add_windows_blosc2_dll_dirs():
         site_dir / "blosc2" / "lib",
         site_dir / "lib",
     ]
+    if debug:
+        print("blosc2_grok: probing DLL dirs:", file=sys.stderr)
     for cand in candidates:
         if cand.is_dir():
             try:
-                os.add_dll_directory(str(cand))
+                # Keep handle alive; otherwise the dir is removed.
+                _dll_dir_handles.append(os.add_dll_directory(str(cand)))
+                if debug:
+                    print(f"  added: {cand}", file=sys.stderr)
             except OSError:
                 # Ignore invalid/permission issues; we'll fail later if needed.
+                if debug:
+                    print(f"  failed: {cand}", file=sys.stderr)
                 pass
 
 
