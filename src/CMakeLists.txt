@@ -83,16 +83,16 @@ endif()
 set(_blosc2_runtime_rpaths "")
 if(APPLE)
     list(APPEND _blosc2_runtime_rpaths
-        "@loader_path/../lib"
         "@loader_path/../blosc2/lib"
         "@loader_path/../blosc2/.dylibs"
+        "@loader_path/../lib"
         "@loader_path/../.dylibs"
     )
 elseif(UNIX)
     list(APPEND _blosc2_runtime_rpaths
-        "$ORIGIN/../lib"
         "$ORIGIN/../blosc2/lib"
         "$ORIGIN/../blosc2/.libs"
+        "$ORIGIN/../lib"
         "$ORIGIN/../.libs"
     )
 endif()
@@ -112,7 +112,10 @@ endif (UNIX AND NOT APPLE)
 
 
 # Install
-install(TARGETS blosc2_grok LIBRARY DESTINATION blosc2_grok)
+install(TARGETS blosc2_grok
+    RUNTIME DESTINATION blosc2_grok
+    LIBRARY DESTINATION blosc2_grok
+)
 # Note: blosc2_grok.h and grok headers are not installed in the wheel
 # Python users don't need them, and C developers should build from source
 

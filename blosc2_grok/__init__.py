@@ -23,7 +23,7 @@ if platform.system() == "Windows":
         blosc2_dir = Path(blosc2.__file__).parent
         site_packages = blosc2_dir.parent  # site-packages directory
         
-        # Add directories to DLL search path
+        # Add directories to DLL search path (prefer PEP 427 layout)
         if hasattr(os, 'add_dll_directory'):
             # PEP 427 compliant: blosc2/lib/
             blosc2_lib = blosc2_dir / "lib"
@@ -65,7 +65,7 @@ if platform.system() == "Windows":
             if path_entries:
                 os.environ["PATH"] = os.pathsep.join(path_entries + [os.environ.get("PATH", "")])
         
-        # Pre-load blosc2 DLL - try all possible locations
+        # Pre-load blosc2 DLL - try all possible locations (prefer PEP 427 layout)
         for dll_name in ['blosc2.dll', 'libblosc2.dll']:
             # PEP 427 compliant: blosc2/blosc2.dll
             dll_path = blosc2_dir / dll_name
@@ -97,6 +97,36 @@ if platform.system() == "Windows":
             if dll_path.exists():
                 ctypes.CDLL(str(dll_path))
                 break
+    except (ImportError, OSError):
+        pass
+elif platform.system() == "Linux":
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec("blosc2")
+        if spec is None or spec.origin is None:
+            raise ImportError("blosc2 not found")
+        blosc2_dir = Path(spec.origin).parent
+        site_packages = blosc2_dir.parent  # site-packages directory
+
+        lib_dirs = [
+            blosc2_dir / "lib",    # PEP 427
+            blosc2_dir / ".libs",  # common wheel layout
+            site_packages / "lib",  # legacy
+            site_packages / ".libs",  # legacy
+            blosc2_dir,  # fallback
+        ]
+        lib_candidates = []
+        for lib_dir in lib_dirs:
+            if not lib_dir.exists():
+                continue
+            lib_candidates.extend(sorted(lib_dir.glob("libblosc2.so*")))
+
+        for lib_path in lib_candidates:
+            try:
+                ctypes.CDLL(str(lib_path), mode=ctypes.RTLD_GLOBAL)
+                break
+            except OSError:
+                continue
     except (ImportError, OSError):
         pass
 
@@ -189,7 +219,16 @@ def get_libpath():
         libname = "blosc2_grok.dll"
     else:
         raise RuntimeError("Unsupported system: ", system)
-    return os.path.abspath(Path(__file__).parent / libname)
+    libpath = Path(__file__).parent / libname
+    if libpath.exists():
+        return os.path.abspath(libpath)
+    if system == "Windows":
+        # Handle alternate build names (e.g., lib prefix or .pyd)
+        for alt in ("libblosc2_grok.dll", "blosc2_grok.pyd"):
+            alt_path = Path(__file__).parent / alt
+            if alt_path.exists():
+                return os.path.abspath(alt_path)
+    return os.path.abspath(libpath)
 
 
 libpath = get_libpath()
