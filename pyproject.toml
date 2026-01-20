@@ -62,3 +62,5 @@ manylinux-aarch64-image = "manylinux_2_28"
 [tool.scikit-build]
 # Python ABI compatibility should not be a problem for Blosc plugins
 wheel.py-api = "py3"
+# Exclude grok static library and headers from wheel (already linked into libblosc2_grok.so)
+wheel.exclude = ["_unused_grok_lib", "_unused_grok_include"]

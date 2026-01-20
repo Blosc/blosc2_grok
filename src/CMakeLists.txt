@@ -33,11 +33,16 @@ if (APPLE)
 endif()
 set(CMAKE_FIND_FRAMEWORK NEVER)
 
-# Install grok library and headers to blosc2_grok/lib and blosc2_grok/include for PEP 427 compliance
-set(CMAKE_INSTALL_LIBDIR blosc2_grok/lib)
-set(CMAKE_INSTALL_INCLUDEDIR blosc2_grok/include)
+# Grok library and headers are already statically linked into libblosc2_grok.so
+# Install them outside the wheel to avoid bloat - Python users don't need them
+set(CMAKE_INSTALL_LIBDIR _unused_grok_lib)
+set(CMAKE_INSTALL_INCLUDEDIR _unused_grok_include)
 
 add_subdirectory(grok)
+
+# Reset install dirs for blosc2_grok files
+set(CMAKE_INSTALL_LIBDIR blosc2_grok/lib)
+set(CMAKE_INSTALL_INCLUDEDIR blosc2_grok/include)
 
 # Build libblosc2_grok.so
 # We will be using SHARED or MODULE depending on the platform.
@@ -92,7 +97,8 @@ endif (UNIX AND NOT APPLE)
 
 # Install
 install(TARGETS blosc2_grok LIBRARY DESTINATION blosc2_grok)
-install(FILES blosc2_grok.h DESTINATION blosc2_grok/include COMPONENT DEV)
+# Note: blosc2_grok.h and grok headers are not installed in the wheel
+# Python users don't need them, and C developers should build from source
 
 # Bundle libblosc2 library for wheel repair
 if(APPLE AND BLOSC2_LIBRARY)
