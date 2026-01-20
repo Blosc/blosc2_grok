@@ -231,6 +231,28 @@ def get_libpath():
     return os.path.abspath(libpath)
 
 
+def _add_windows_blosc2_dll_dirs():
+    if platform.system() != "Windows":
+        return
+    if not hasattr(os, "add_dll_directory"):
+        return
+    site_dir = Path(__file__).resolve().parent.parent
+    candidates = [
+        site_dir / "bin",
+        site_dir / "blosc2" / "bin",
+        site_dir / "blosc2" / "lib",
+        site_dir / "lib",
+    ]
+    for cand in candidates:
+        if cand.is_dir():
+            try:
+                os.add_dll_directory(str(cand))
+            except OSError:
+                # Ignore invalid/permission issues; we'll fail later if needed.
+                pass
+
+
+_add_windows_blosc2_dll_dirs()
 libpath = get_libpath()
 lib = ctypes.cdll.LoadLibrary(libpath)
 
