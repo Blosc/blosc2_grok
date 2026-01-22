@@ -16,6 +16,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
 # set(CMAKE_CXX_FLAGS_DEBUG_INIT "-O0 -g")
 
 message("Building Blosc2 plugin...")
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 # Propagate CMAKE_OSX_ARCHITECTURES env variable into CMAKE_SYSTEM_PROCESSOR
 if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
@@ -42,26 +43,18 @@ execute_process(
 if(BLOSC2_IMPORT_RESULT EQUAL 0 AND EXISTS "${BLOSC2_PACKAGE_DIR}")
     message(STATUS "Found blosc2 package at: ${BLOSC2_PACKAGE_DIR}")
     
-    # Try PEP 427 compliant structure first (blosc2/include/)
+    # Try only PEP 427 compliant structure (blosc2/include/)
     set(BLOSC2_INCLUDE_DIR "${BLOSC2_PACKAGE_DIR}/include")
     if(NOT EXISTS "${BLOSC2_INCLUDE_DIR}/blosc2.h")
-        # Fall back to site-packages/include/ (old structure)
-        get_filename_component(SITE_PACKAGES "${BLOSC2_PACKAGE_DIR}" DIRECTORY)
-        set(BLOSC2_INCLUDE_DIR "${SITE_PACKAGES}/include")
-    endif()
-    
-    if(EXISTS "${BLOSC2_INCLUDE_DIR}/blosc2.h")
-        message(STATUS "Found Blosc2 include: ${BLOSC2_INCLUDE_DIR}/blosc2.h")
+        message(FATAL_ERROR "blosc2 package found but blosc2.h not found. Tried:\n  ${BLOSC2_PACKAGE_DIR}/include")
     else()
-        message(FATAL_ERROR "blosc2 package found but blosc2.h not found. Tried:\n  ${BLOSC2_PACKAGE_DIR}/include\n  ${SITE_PACKAGES}/include")
+        message(STATUS "Found Blosc2 include: ${BLOSC2_INCLUDE_DIR}/blosc2.h")
     endif()
     
-    # Try PEP 427 compliant structure first (blosc2/lib/)
+    # Try only PEP 427 compliant structure (blosc2/lib/)
     set(BLOSC2_LIB_DIR "${BLOSC2_PACKAGE_DIR}/lib")
     if(NOT EXISTS "${BLOSC2_LIB_DIR}")
-        # Fall back to site-packages/lib/ (old structure)
-        get_filename_component(SITE_PACKAGES "${BLOSC2_PACKAGE_DIR}" DIRECTORY)
-        set(BLOSC2_LIB_DIR "${SITE_PACKAGES}/lib")
+        message(FATAL_ERROR "blosc2 lib dir not found. Tried:\n  ${BLOSC2_PACKAGE_DIR}/lib")
     endif()
     
     find_library(BLOSC2_LIBRARY
