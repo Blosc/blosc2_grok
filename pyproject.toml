@@ -7,7 +7,7 @@
 ##############################################################################
 
 [build-system]
-requires = ["scikit-build-core", "blosc2"]
+requires = ["scikit-build-core", "blosc2>=4.0.0b1"]
 build-backend = "scikit_build_core.build"
 
 [project]
