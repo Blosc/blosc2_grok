@@ -24,14 +24,11 @@ if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
     endif()
 endif()
 
-# Find blosc2.h and libblosc2
-find_package(Python COMPONENTS Interpreter NumPy Development.Module REQUIRED)
-message(STATUS "Executable: ${Python_EXECUTABLE}")
-message(STATUS "NumPy found: ${Python_NumPy_FOUND}")
-message(STATUS "NumPy version: ${Python_NumPy_VERSION}")
-message(STATUS "Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
-
 # Find blosc2 package location using Python
+#The following two steps are necessary when calling via cmake
+find_package(Python REQUIRED COMPONENTS Interpreter) 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
 execute_process(
     COMMAND "${Python_EXECUTABLE}" -c "import blosc2, pathlib; print(pathlib.Path(blosc2.__file__).parent)"
     OUTPUT_VARIABLE BLOSC2_PACKAGE_DIR
