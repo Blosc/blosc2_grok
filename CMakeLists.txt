@@ -25,7 +25,7 @@ if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
 endif()
 
 # Find blosc2 package location using Python
-#The following two steps are necessary when calling via cmake
+# The following two steps are necessary when calling via cmake
 find_package(Python REQUIRED COMPONENTS Interpreter) 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
