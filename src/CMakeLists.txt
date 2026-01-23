@@ -113,10 +113,6 @@ endif()
 
 unset(_blosc2_runtime_rpaths)
 
-link_directories(${Python_LIB})
-if (UNIX AND NOT APPLE)
-    link_directories(${Python_LIB64})
-endif (UNIX AND NOT APPLE)
 
 
 # Install
