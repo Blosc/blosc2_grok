@@ -71,7 +71,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/grok/src/lib/core
 )
 
-target_link_libraries(blosc2_grok grokj2k ${BLOSC2_LIBRARIES})
+target_link_libraries(blosc2_grok grokj2k)
 
 # Set RPATH for locating libblosc2 at runtime
 if(DEFINED BLOSC2_LIBRARY_DIR_RESOLVED)
