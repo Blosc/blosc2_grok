@@ -216,7 +216,7 @@ def get_libpath():
     if system == "Linux":
         libname = "libblosc2_grok.so"
     elif system == "Darwin":
-        libname = "libblosc2_grok.dylib"
+        libname = "libblosc2_grok.so"
     elif system == "Windows":
         libname = "blosc2_grok.dll"
     else:
