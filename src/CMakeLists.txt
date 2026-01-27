@@ -13,6 +13,7 @@ set(GRK_BUILD_CORE_EXAMPLES OFF)
 # Avoid adding unneeded files to the wheel
 set(GRK_BUILD_PKGCONFIG_FILES OFF)
 set(GRK_BUILD_CODEC OFF)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 # Build statically
 set(BUILD_SHARED_LIBS OFF)
