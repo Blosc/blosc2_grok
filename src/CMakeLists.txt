@@ -31,7 +31,17 @@ target_include_directories(grokj2k
         ${CMAKE_CURRENT_BINARY_DIR}/grok/src/lib/core  # generated headers
 )
 # Build libblosc2_grok.so
-add_library(blosc2_grok SHARED blosc2_grok.cpp)
+if (UNIX AND NOT APPLE)  # Linux
+    add_library(blosc2_grok SHARED blosc2_grok.cpp)
+elseif (APPLE)
+    if ({CMAKE_OSX_ARCHITECTURES} STREQUAL "arm64")
+        add_library(blosc2_grok SHARED blosc2_grok.cpp)
+    else()
+        add_library(blosc2_grok MODULE blosc2_grok.cpp)
+    endif()
+else()  # Windows
+    add_library(blosc2_grok MODULE blosc2_grok.cpp)
+endif()
 
 if(APPLE) # necessary for macOS
     target_link_options(blosc2_grok PRIVATE "-undefined" "dynamic_lookup")

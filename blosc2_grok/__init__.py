@@ -213,8 +213,10 @@ class GrkMode(Enum):
 
 def get_libpath():
     system = platform.system()
-    if system in ["Linux", "Darwin"]:
+    if system == "Linux":
         libname = "libblosc2_grok.so"
+    elif system == "Darwin":
+        libname = "libblosc2_grok.dylib"
     elif system == "Windows":
         libname = "blosc2_grok.dll"
     else:
