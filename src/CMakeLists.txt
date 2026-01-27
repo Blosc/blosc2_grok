@@ -44,10 +44,6 @@ else()  # Windows
     add_library(blosc2_grok MODULE blosc2_grok.cpp)
 endif()
 
-if(APPLE) # necessary for macOS
-    target_link_options(blosc2_grok PRIVATE "-undefined" "dynamic_lookup")
-endif()
-
 if (MSVC OR MINGW)
     # Necessary for compiling blosc2_grok.lib
     set_property(TARGET blosc2_grok PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
@@ -55,7 +51,7 @@ endif()
 
 target_include_directories(blosc2_grok PUBLIC ${BLOSC2_INCLUDE_DIR})
 # link to grok (not to blosc2, since blosc2_grok always called via blosc2 as plugin)
-target_link_libraries(blosc2_grok grokj2k)
+target_link_libraries(blosc2_grok grokj2k ${BLOSC2_LIBRARIES})
 
 # Add runtime path just in case (e.g. load plugin before blosc2 for example)
 # will not always be used, but if can't find blosc2 gives another thing to check
