@@ -10,16 +10,6 @@ set(GRK_BUILD_LIBPNG OFF)
 set(GRK_BUILD_JPEG OFF)
 set(GRK_BUILD_CORE_EXAMPLES OFF)
 
-# Needed in the continuous integration
-#if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
-#    if("$ENV{CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
-#        set(GRK_BUILD_LIBTIFF ON)
-#        set(GRK_BUILD_LIBPNG ON)
-#        set(GRK_BUILD_JPEG ON)
-#        set(GRK_BUILD_LCMS2 ON)
-#    endif()
-#endif()
-
 # Avoid adding unneeded files to the wheel
 set(GRK_BUILD_PKGCONFIG_FILES OFF)
 set(GRK_BUILD_CODEC OFF)
@@ -41,11 +31,23 @@ target_include_directories(grokj2k
         ${CMAKE_CURRENT_BINARY_DIR}/grok/src/lib/core  # generated headers
 )
 # Build libblosc2_grok.so
-# We will be using SHARED or MODULE depending on the platform.
-# Ideally, we would like to use SHARED for all platforms
-# because that allows to link with C++ code in the shared library.
-# Unfortunately, not every platform supports SHARED.
-add_library(blosc2_grok SHARED blosc2_grok.cpp)
+if (UNIX AND NOT APPLE)  # Linux
+    add_library(blosc2_grok SHARED blosc2_grok.cpp)
+elseif (APPLE)
+    if ({CMAKE_OSX_ARCHITECTURES} STREQUAL "arm64")
+        add_library(blosc2_grok SHARED blosc2_grok.cpp)
+    else()
+        add_library(blosc2_grok MODULE blosc2_grok.cpp)
+    endif()
+else()  # Windows
+    add_library(blosc2_grok MODULE blosc2_grok.cpp)
+endif()
+
+if (MSVC OR MINGW)
+    # Necessary for compiling blosc2_grok.lib
+    set_property(TARGET blosc2_grok PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+endif()
+
 target_include_directories(blosc2_grok PUBLIC ${BLOSC2_INCLUDE_DIR})
 # link to grok (not to blosc2, since blosc2_grok always called via blosc2 as plugin)
 target_link_libraries(blosc2_grok grokj2k)
