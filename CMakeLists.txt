@@ -40,7 +40,7 @@ execute_process(
     RESULT_VARIABLE BLOSC2_IMPORT_RESULT
 )
 
-# To compile blosc2_grok, we only need the include files
+# To compile blosc2_grok, we need the include files (and for macOS and Windows, the actual lib)
 if(BLOSC2_IMPORT_RESULT EQUAL 0 AND EXISTS "${BLOSC2_PACKAGE_DIR}")
     message(STATUS "Found blosc2 package at: ${BLOSC2_PACKAGE_DIR}")
 
@@ -55,7 +55,8 @@ else()
     message(FATAL_ERROR "Could not import blosc2 package. Please install it first: pip install blosc2")
 endif()
 
-# For the test_grok and roundtrip executables, we also need the actual blosc2 lib
+# For the test_grok and roundtrip executables, and for macOS/Windows, 
+# we also need the actual blosc2 lib
 # Try only PEP 427 compliant structure (blosc2/lib/)
 set(BLOSC2_LIB_DIR "${BLOSC2_PACKAGE_DIR}/lib")
 if(NOT EXISTS "${BLOSC2_LIB_DIR}")

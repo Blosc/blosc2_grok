@@ -32,6 +32,10 @@ target_include_directories(grokj2k
         ${CMAKE_CURRENT_BINARY_DIR}/grok/src/lib/core  # generated headers
 )
 # Build libblosc2_grok.so
+# We will be using SHARED or MODULE depending on the platform.
+# Ideally, we would like to use SHARED for all platforms
+# because that allows to link with C++ code in the shared library.
+# Unfortunately, not every platform supports SHARED.
 if (UNIX AND NOT APPLE)  # Linux
     add_library(blosc2_grok SHARED blosc2_grok.cpp)
 elseif (APPLE)
@@ -50,7 +54,7 @@ if (MSVC OR MINGW)
 endif()
 
 target_include_directories(blosc2_grok PUBLIC ${BLOSC2_INCLUDE_DIR})
-# link to grok (not to blosc2, since blosc2_grok always called via blosc2 as plugin)
+# link to grok and to blosc2 (link to blosc2 necessary for Windows and macOS)
 target_link_libraries(blosc2_grok grokj2k ${BLOSC2_LIBRARIES})
 
 # Add runtime path just in case (e.g. load plugin before blosc2 for example)
