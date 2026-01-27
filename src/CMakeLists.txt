@@ -38,47 +38,38 @@ set(CMAKE_FIND_FRAMEWORK NEVER)
 set(CMAKE_INSTALL_LIBDIR _unused_grok_lib)
 set(CMAKE_INSTALL_INCLUDEDIR _unused_grok_include)
 
-add_subdirectory(grok)
+FetchContent_Declare(
+    grok
+    GIT_REPOSITORY https://github.com/GrokImageCompression/grok.git
+    GIT_TAG a84ac2592e581405a976a00cf9e6f03cab7e2481 # pin exact version
+)
 
-# Reset install dirs for blosc2_grok files
-set(CMAKE_INSTALL_LIBDIR blosc2_grok/lib)
-set(CMAKE_INSTALL_INCLUDEDIR blosc2_grok/include)
+FetchContent_MakeAvailable(grok)
 
 # Build libblosc2_grok.so
 # We will be using SHARED or MODULE depending on the platform.
 # Ideally, we would like to use SHARED for all platforms
 # because that allows to link with C++ code in the shared library.
 # Unfortunately, not every platform supports SHARED.
-if (UNIX AND NOT APPLE)  # Linux
-    add_library(blosc2_grok SHARED blosc2_grok.cpp)
-elseif (APPLE)
-    if ({CMAKE_OSX_ARCHITECTURES} STREQUAL "arm64")
-        add_library(blosc2_grok SHARED blosc2_grok.cpp)
-    else()
-        add_library(blosc2_grok MODULE blosc2_grok.cpp)
-    endif()
-else()  # Windows
-    add_library(blosc2_grok MODULE blosc2_grok.cpp)
-endif()
+add_library(blosc2_grok SHARED blosc2_grok.cpp)
 
-if (MSVC OR MINGW)
-    # Necessary for compiling blosc2_grok.lib
-    set_property(TARGET blosc2_grok PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-endif()
+target_include_directories(blosc2_grok PUBLIC ${BLOSC2_INCLUDE_DIR})
+# link to grok (not to blosc2, since blosc2_grok always called via blosc2 as plugin)
+target_link_libraries(blosc2_openzl PRIVATE grok) 
 
-include_directories(
-    grok/src/lib/core
-    ${CMAKE_CURRENT_BINARY_DIR}/grok/src/lib/core
-)
-
-target_link_libraries(blosc2_grok grokj2k)
-
-# Set RPATH for locating libblosc2 at runtime
-if(DEFINED BLOSC2_LIBRARY_DIR_RESOLVED)
+# Add runtime path just in case (e.g. load plugin before blosc2 for example)
+# will not always be used, but if can't find blosc2 gives another thing to check
+# before failing
+if(UNIX AND NOT APPLE)
     set_target_properties(blosc2_grok PROPERTIES
-        BUILD_RPATH "${BLOSC2_LIBRARY_DIR_RESOLVED}"
+        INSTALL_RPATH "$ORIGIN/../blosc2/lib"
+    )
+elseif(APPLE)
+    set_target_properties(blosc2_grok PROPERTIES
+        INSTALL_RPATH "@loader_path/../blosc2/lib"
     )
 endif()
+
 
 set(_blosc2_runtime_rpaths "")
 if(APPLE)
@@ -111,7 +102,9 @@ install(TARGETS blosc2_grok
 if(NOT DEFINED ENV{DONT_BUILD_EXAMPLES})
     message(STATUS "DONT_BUILD_EXAMPLES not set-> Building examples")
     add_executable(test_grok test_grok.cpp blosc2_grok.cpp utils.cpp)
+    target_include_directories(test_grok PRIVATE ${BLOSC2_INCLUDE_DIR})
     add_executable(roundtrip roundtrip.cpp blosc2_grok.cpp utils.cpp)
+    target_include_directories(roundtrip PRIVATE ${BLOSC2_INCLUDE_DIR})
     if(MSVC OR MINGW)
         target_link_libraries(test_grok ${BLOSC2_LIBRARIES} grokj2k)
         target_link_libraries(roundtrip ${BLOSC2_LIBRARIES} grokj2k)

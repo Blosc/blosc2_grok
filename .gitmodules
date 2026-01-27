@@ -1,3 +1,0 @@
-[submodule "src/grok"]
-	path = src/grok
-	url = https://github.com/GrokImageCompression/grok.git
