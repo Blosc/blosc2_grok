@@ -15,7 +15,12 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
 # set(CMAKE_C_FLAGS_DEBUG_INIT "-O0 -g")
 # set(CMAKE_CXX_FLAGS_DEBUG_INIT "-O0 -g")
 
+include(GNUInstallDirs)
+
 message("Building Blosc2 plugin...")
+
+# Necessary when calling via cmake (to know which python to call)
+find_package(Python REQUIRED COMPONENTS Interpreter) 
 
 # Propagate CMAKE_OSX_ARCHITECTURES env variable into CMAKE_SYSTEM_PROCESSOR
 if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
@@ -24,29 +29,55 @@ if(DEFINED ENV{CMAKE_OSX_ARCHITECTURES})
     endif()
 endif()
 
-# Find blosc2.h
-find_package(Python COMPONENTS Interpreter NumPy Development.Module REQUIRED)
-message(STATUS "Executable: ${Python_EXECUTABLE}")
-message(STATUS "NumPy found: ${Python_NumPy_FOUND}")
-message(STATUS "NumPy version: ${Python_NumPy_VERSION}")
-message(STATUS "Python_NumPy_INCLUDE_DIRS: ${Python_NumPy_INCLUDE_DIRS}")
-if (UNIX)
-    cmake_path(SET Python_ROOT NORMALIZE "${Python_NumPy_INCLUDE_DIRS}/../../../../../..")
+# ============================================================
+# Step 1: Find C-Blosc2
+# ============================================================
+# Find blosc2 package location using Python
+execute_process(
+    COMMAND "${Python_EXECUTABLE}" -c "import blosc2, pathlib; print(pathlib.Path(blosc2.__file__).parent)"
+    OUTPUT_VARIABLE BLOSC2_PACKAGE_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE BLOSC2_IMPORT_RESULT
+)
+
+# To compile blosc2_grok, we need the include files (and for macOS and Windows, the actual lib)
+if(BLOSC2_IMPORT_RESULT EQUAL 0 AND EXISTS "${BLOSC2_PACKAGE_DIR}")
+    message(STATUS "Found blosc2 package at: ${BLOSC2_PACKAGE_DIR}")
+
+    # Try only PEP 427 compliant structure (blosc2/include/)
+    set(BLOSC2_INCLUDE_DIR "${BLOSC2_PACKAGE_DIR}/include")
+    if(NOT EXISTS "${BLOSC2_INCLUDE_DIR}/blosc2.h")
+        message(FATAL_ERROR "blosc2 package found but blosc2.h not found. Tried:\n  ${BLOSC2_PACKAGE_DIR}/include")
+    else()
+        message(STATUS "Found Blosc2 include: ${BLOSC2_INCLUDE_DIR}/blosc2.h")
+    endif()
 else()
-    cmake_path(SET Python_ROOT NORMALIZE "${Python_NumPy_INCLUDE_DIRS}/../../../../..")
-endif()
-cmake_path(SET Python_INCLUDE NORMALIZE "${Python_ROOT}/include")
-message(STATUS "Found Python include: ${Python_INCLUDE}")
-cmake_path(SET Python_LIB NORMALIZE "${Python_ROOT}/lib")
-cmake_path(SET Python_LIB64 NORMALIZE "${Python_ROOT}/lib64")
-cmake_path(SET Python_Blosc2_INCLUDE NORMALIZE "${Python_ROOT}/include/blosc2.h")
-cmake_path(HAS_FILENAME Python_Blosc2_INCLUDE HAS_BLOSC2)
-if(HAS_BLOSC2)
-    set(BLOSC2_INCLUDE_DIR ${Python_INCLUDE})
-    message(STATUS "Found Blosc2 include: ${Python_Blosc2_INCLUDE}")
-else()
-    message(FATAL_ERROR "No Blosc2 includes found.  Aborting.")
+    message(FATAL_ERROR "Could not import blosc2 package. Please install it first: pip install blosc2")
 endif()
 
-include_directories("${BLOSC2_INCLUDE_DIR}")
+# For the test_grok and roundtrip executables, and for macOS/Windows, 
+# we also need the actual blosc2 lib
+# Try only PEP 427 compliant structure (blosc2/lib/)
+set(BLOSC2_LIB_DIR "${BLOSC2_PACKAGE_DIR}/lib")
+if(NOT EXISTS "${BLOSC2_LIB_DIR}")
+    message(FATAL_ERROR "blosc2 lib dir not found. Tried:\n  ${BLOSC2_PACKAGE_DIR}/lib")
+endif()
+
+find_library(BLOSC2_LIBRARY
+    NAMES blosc2 libblosc2
+    PATHS "${BLOSC2_LIB_DIR}"
+    NO_DEFAULT_PATH
+)
+
+if(BLOSC2_LIBRARY)
+    message(STATUS "Found Blosc2 library: ${BLOSC2_LIBRARY}")
+    set(BLOSC2_LIBRARIES "${BLOSC2_LIBRARY}")
+    get_filename_component(BLOSC2_LIBRARY_DIR_RESOLVED "${BLOSC2_LIBRARY}" DIRECTORY)
+else()
+    message(FATAL_ERROR "Blosc2 library not found in ${BLOSC2_LIB_DIR}. Please install the blosc2 Python package with bundled libraries.")
+endif()
+
+# ============================================================
+# blosc2_grok plugin source files
+# ============================================================
 add_subdirectory(src)

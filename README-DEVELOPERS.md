@@ -37,6 +37,28 @@ CMAKE_OSX_ARCHITECTURES=arm64 python -m cibuildwheel --only 'cp311-macosx_arm64'
 pip install wheelhouse/blosc2_grok-*.whl --force-reinstall
 ```
 
+## Compiling C-Blosc2 apps with the grok plugin
+
+The blosc2_grok wheel includes static libraries and headers for reference, but for compiling C applications with the grok plugin, you should build and install blosc2_grok from source rather than using the Python wheel.
+
+### Building from source for C development
+
+```bash
+git clone https://github.com/Blosc/blosc2_grok.git
+cd blosc2_grok
+git submodule update --init
+mkdir build && cd build
+cmake ..
+make
+sudo make install
+```
+
+Then compile your C application:
+
+```bash
+gcc myapp.c -I/usr/local/include -L/usr/local/lib -lblosc2_grok -lgrokj2k -lblosc2 -o myapp
+```
+
 ## Debugging
 
 If you would like to debug and run an example from C getting to track the problem through the C functions, you can use
