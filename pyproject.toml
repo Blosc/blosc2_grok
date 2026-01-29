@@ -7,7 +7,7 @@
 ##############################################################################
 
 [build-system]
-requires = ["scikit-build-core", "blosc2>=4.0.0b1"]
+requires = ["scikit-build-core", "blosc2>=4.0.0.b1"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -35,7 +35,7 @@ classifiers = [
 ]
 dependencies = [
     # python-blosc2 brings the required blosc2 libraries
-    "blosc2"
+    "blosc2>=4.0.0.b1"
 ]
 
 [project.optional-dependencies]
