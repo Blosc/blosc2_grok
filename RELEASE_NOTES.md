@@ -2,6 +2,15 @@
 
 ## Changes from 0.3.5 to 0.3.6
 
+* Adapted to c-blosc2 >= 3.1.0: `b2nd_deserialize_meta_inline()` and
+  `blosc2_meta_get()` are now static inline in the headers, so
+  `libblosc2_grok` no longer needs to link against `libblosc2` at build
+  time or load it at runtime.  This eliminates the `RTLD_GLOBAL` pre-load
+  of `libblosc2` that was the root cause of symbol conflicts (e.g., ZFP
+  symbols from blosc2 shadowing those from hdf5plugin; see #22).
+* Removed the `blosc2_symbols.txt` file (no runtime symbols from
+  libblosc2 are needed anymore).
+
 #XXX version-specific blurb XXX#
 
 ## Changes from 0.3.4 to 0.3.5

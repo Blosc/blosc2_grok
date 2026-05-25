@@ -54,27 +54,10 @@ if (MSVC OR MINGW)
 endif()
 
 target_include_directories(blosc2_grok PUBLIC ${BLOSC2_INCLUDE_DIR})
-# link to grok but not to blosc2 (on linux)
+# As of c-blosc2 3.1.0, b2nd_deserialize_meta_inline() and blosc2_meta_get() are
+# static inline in the headers, so the plugin no longer needs to link against
+# libblosc2 at build time or load it at runtime.
 target_link_libraries(blosc2_grok PRIVATE grokj2k)
-
-if(APPLE OR WIN32)
-    # On Windows and macOS easiest to just link to Blosc2 explicitly
-    target_link_libraries(blosc2_grok PRIVATE ${BLOSC2_LIBRARIES})
-endif()
-# Link to blosc2 necessary for Windows
-
-# Add runtime path just in case (e.g. load plugin before blosc2 for example)
-# will not always be used, but if can't find blosc2 gives another thing to check
-# before failing
-if(UNIX AND NOT APPLE)
-    set_target_properties(blosc2_grok PROPERTIES
-        INSTALL_RPATH "$ORIGIN/../blosc2/lib"
-    )
-elseif(APPLE)
-    set_target_properties(blosc2_grok PROPERTIES
-        INSTALL_RPATH "@loader_path/../blosc2/lib"
-    )
-endif()
 
 # Install
 install(TARGETS blosc2_grok

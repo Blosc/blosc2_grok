@@ -190,7 +190,7 @@ int blosc2_grok_encoder(
     char *dtype;
     int8_t dtype_format;
     BLOSC_ERROR(
-        b2nd_deserialize_meta(content, content_len, &ndim,
+        b2nd_deserialize_meta_inline(content, content_len, &ndim,
                               shape, chunkshape, blockshape, &dtype, &dtype_format)
     );
     free(content);
