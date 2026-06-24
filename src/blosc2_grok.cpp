@@ -180,19 +180,20 @@ int blosc2_grok_encoder(
     // Read blosc2 metadata
     uint8_t *content;
     int32_t content_len;
-    BLOSC_ERROR(blosc2_meta_get((blosc2_schunk*)cparams->schunk, "b2nd",
-                                &content, &content_len));
+    // Plain return-on-error is enough here, caller handles cleanup.
+    int rc = blosc2_meta_get((blosc2_schunk*)cparams->schunk, "b2nd",
+                             &content, &content_len);
+    if (rc < 0) return rc;
 
     int8_t ndim;
-    int64_t shape[BLOSC2_MAX_DIM];
-    int32_t chunkshape[BLOSC2_MAX_DIM];
-    int32_t blockshape[BLOSC2_MAX_DIM];
+    int64_t shape[B2ND_MAX_DIM];
+    int32_t chunkshape[B2ND_MAX_DIM];
+    int32_t blockshape[B2ND_MAX_DIM];
     char *dtype;
     int8_t dtype_format;
-    BLOSC_ERROR(
-        b2nd_deserialize_meta(content, content_len, &ndim,
-                              shape, chunkshape, blockshape, &dtype, &dtype_format)
-    );
+    rc = b2nd_deserialize_meta_inline(content, content_len, &ndim,
+                              shape, chunkshape, blockshape, &dtype, &dtype_format);
+    if (rc < 0) return rc;
     free(content);
     free(dtype);
 
